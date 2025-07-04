@@ -15,7 +15,11 @@ function App() {
     setError("");
     setData(null);
     try {
-      const res = await axios.get(`http://localhost:8000/analyze?stock=${stock}`);
+      const API_BASE = import.meta.env.VITE_BACKEND_URL;
+
+      const res = await axios.get(`${API_BASE}/analyze?stock=${stock}`);
+
+      //const res = await axios.get(`http://localhost:8000/analyze?stock=${stock}`);
       if (res.data.error) {
         setError(res.data.error);
       } else {
