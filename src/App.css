@@ -1,0 +1,71 @@
+/* App.css */
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: #0f172a; /* Slate-900 */
+  font-family: 'Segoe UI', sans-serif;
+  color: #e2e8f0; /* Light text */
+}
+
+.app {
+  text-align: center;
+  padding: 2rem;
+}
+
+.app-title {
+  font-size: 2.5rem;
+  color: #38bdf8; /* Sky-400 */
+  margin-bottom: 2rem;
+}
+
+.search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.search-bar input {
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  width: 280px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background-color: #1e293b;
+  color: #fff;
+  box-shadow: 0 0 5px #0284c7;
+}
+
+button {
+  padding: 0.7rem 1.2rem;
+  background: linear-gradient(to right, #06b6d4, #3b82f6);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(to right, #3b82f6, #06b6d4);
+}
+
+.loading,
+.error {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
+
+.error {
+  color: #f87171;
+}
+.subtitle {
+  color: #888;
+  font-size: 1rem;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}

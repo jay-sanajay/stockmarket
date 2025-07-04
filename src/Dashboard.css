@@ -1,0 +1,203 @@
+/* Global */
+body, .dashboard {
+  background-color: #0f172a; /* Dark Slate */
+  color: #e2e8f0; /* Light text */
+  font-family: 'Segoe UI', sans-serif;
+  padding: 2rem;
+  margin: 0;
+}
+
+/* Company Title */
+.company-title {
+  font-size: 2.4rem;
+  margin-bottom: 2rem;
+  color: #38bdf8; /* Sky blue */
+  text-align: center;
+  text-shadow: 0 0 8px #0ea5e9;
+}
+
+/* Grid of Ratios */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  padding: 1rem;
+  border-radius: 12px;
+  color: #0f172a;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(14, 165, 233, 0.2);
+}
+
+/* Chart Section */
+.bar-chart-section h2,
+.chart-container h2,
+.report-container h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #facc15;
+  font-size: 1.6rem;
+  text-shadow: 0 0 5px #facc15aa;
+}
+
+.chart-image {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #0ea5e9;
+  border: 1px solid #334155;
+  margin-top: 1rem;
+}
+
+/* Gemini Report Container */
+.report-container {
+  background-color: #1e293b; /* Darker slate */
+  padding: 1.5rem;
+  border-radius: 14px;
+  margin-top: 2rem;
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+}
+
+.report-heading {
+  color: #7dd3fc;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 8px #7dd3fcaa;
+}
+
+/* Gemini Report Text Styling */
+.report-text {
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* Section Headers */
+.report-section {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Colorful Titles */
+.report-section.company-overview {
+  color: #60a5fa; /* Blue */
+}
+
+.report-section.technical-analysis {
+  color: #f59e0b; /* Amber */
+}
+
+.report-section.suitability {
+  color: #34d399; /* Emerald */
+}
+
+.report-subheading.pros {
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+.report-subheading.cons {
+  color: #f87171;
+  font-weight: bold;
+}
+
+.report-subheading.verdict {
+  color: #facc15;
+  font-weight: bold;
+}
+
+.report-subheading.final-verdict {
+  color: #f472b6;
+  font-weight: bold;
+}
+
+/* Verdict Colors */
+.report-line.buy {
+  color: #4ade80; /* Green */
+  font-weight: bold;
+}
+
+.report-line.sell {
+  color: #f87171; /* Red */
+  font-weight: bold;
+}
+
+.report-line.hold {
+  color: #facc15; /* Yellow */
+  font-weight: bold;
+}
+
+/* Smooth Transition */
+.metric-card, .report-line {
+  transition: all 0.3s ease-in-out;
+}
+
+.metric-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 12px rgba(34, 211, 238, 0.3);
+}
+.order-summary-section h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #f97316; /* orange */
+  font-size: 1.4rem;
+}
+.order-summary-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #eab308;
+  text-align: center;
+} 
+.section-title {
+  font-weight: bold;
+  font-size: 20px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.company-overview {
+  color: #3b82f6;
+}
+
+.technical-analysis {
+  color: #0ea5e9;
+}
+
+.pros-cons {
+  color: #10b981;
+}
+
+.investor-strategy {
+  color: #f59e0b;
+}
+
+.verdict {
+  color: #a855f7;
+}
+
+.final-verdict {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.buy {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.sell {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.hold {
+  color: #facc15;
+  font-weight: bold;
+}
