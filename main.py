@@ -14,7 +14,10 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite frontend origin
+    allow_origins=[
+        "http://localhost:5173",
+        "https://stockmarket-rho.vercel.app"                        
+        ],  # Vite frontend origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
