@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import StockDashboard from "./StockDashboard";
 import "./App.css";
+import axios from "axios";
 
 function App() {
   const [stock, setStock] = useState("");
