@@ -180,3 +180,12 @@ body, .dashboard {
     font-size: 2rem;
   }
 }
+.report-container ul {
+  padding-left: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.report-container li {
+  margin-bottom: 0.4rem;
+  color: #e2e8f0;
+}

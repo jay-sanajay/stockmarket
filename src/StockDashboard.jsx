@@ -1,34 +1,15 @@
-import React from "react";
-import "./Dashboard.css";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-  LabelList,
-  Cell,
-} from "recharts";
-
-const colors = {
-  "P/E": "#f87171",
-  "ROE (%)": "#4ade80",
-  "ROA (%)": "#60a5fa",
-  "Debt/Equity": "#facc15",
-  "Dividend Yield (%)": "#a78bfa",
-  "Market Cap (Cr)": "#f472b6",
-  "Current Price": "#34d399",
-  "P/B": "#fb923c",
-  "Book Value": "#38bdf8",
-  "Profit (Cr)": "#22d3ee",
-  "Revenue (Cr)": "#fde047",
-  "Promoter Holding (%)": "#f59e0b",
-};
-
+// ... existing imports
 export default function StockDashboard({ data }) {
-  const { company, ratios, chart_base64, full_report, order_summary } = data;
+  const {
+    company,
+    ratios,
+    chart_base64,
+    full_report,
+    order_summary,
+    news_sentiment,
+    news_headlines,
+    market_triggers,
+  } = data;
 
   const getColor = (label) => colors[label] || "#cbd5e1";
 
@@ -53,7 +34,6 @@ export default function StockDashboard({ data }) {
       color: getColor(label),
     }));
 
-  // Extract and color-code Final Verdict
   const finalVerdictLine = full_report
     .split("\n")
     .find((line) => line.toLowerCase().includes("📌 final verdict"));
@@ -147,13 +127,26 @@ export default function StockDashboard({ data }) {
         />
       </div>
 
-      {/* Gemini SEBI Report */}
+      {/* 📰 News & Market Triggers */}
+      <div className="report-container">
+        <h2 className="report-heading">📰 News & Market Sentiment</h2>
+        <p><strong>News Sentiment:</strong> {news_sentiment}</p>
+        <p><strong>FII/DII Activity:</strong> {market_triggers}</p>
+        {news_headlines && news_headlines.length > 0 && (
+          <ul>
+            {news_headlines.map((headline, idx) => (
+              <li key={idx}>🗞️ {headline}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Gemini Report */}
       <div className="report-container">
         <h2 className="report-heading">🧠 Gemini SEBI-Style Report</h2>
         <div className="report-text">
           {otherLines.map((line, idx) => {
             const cleanLine = line.replace(/\*/g, "").trim();
-
             const sectionMap = {
               "1. Company Overview": "report-section company-overview",
               "2. Technical Summary": "report-section technical-analysis",
@@ -161,12 +154,10 @@ export default function StockDashboard({ data }) {
               "4. Investor Strategy": "report-section investor-strategy",
               "5. Suggested Entry/Exit": "report-section entry-exit",
             };
-
             const classList = ["report-line"];
             for (const key in sectionMap) {
               if (cleanLine.startsWith(key)) classList.push(sectionMap[key]);
             }
-
             const customHeaders = {
               "1. Company Overview": "1️⃣ Company Overview",
               "2. Technical Summary": "📉 Technical Summary",
@@ -174,11 +165,9 @@ export default function StockDashboard({ data }) {
               "4. Investor Strategy": "🎯 Investor Strategy",
               "5. Suggested Entry/Exit": "⚖️ Entry & Exit Plan",
             };
-
             const headerKey = Object.keys(customHeaders).find((key) =>
               cleanLine.startsWith(key)
             );
-
             if (headerKey) {
               return (
                 <p key={idx} className={`${classList.join(" ")} section-title`}>
@@ -186,7 +175,6 @@ export default function StockDashboard({ data }) {
                 </p>
               );
             }
-
             return (
               <p key={idx} className={classList.join(" ")}>
                 {cleanLine}

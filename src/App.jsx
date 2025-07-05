@@ -16,6 +16,8 @@ function App() {
     setData(null);
     try {
       // Replace with your deployed URL in production
+     
+
      const res = await axios.get(`https://stockmarket-rz6w.onrender.com/analyze?stock=${stock}`);
       if (res.data.error) {
         setError(res.data.error);
