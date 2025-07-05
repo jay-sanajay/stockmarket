@@ -1,3 +1,32 @@
+import React from "react";
+import "./Dashboard.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+  LabelList,
+  Cell,
+} from "recharts";
+
+// ✅ Fix: Add this block
+const colors = {
+  "P/E": "#f87171",
+  "ROE (%)": "#4ade80",
+  "ROA (%)": "#60a5fa",
+  "Debt/Equity": "#facc15",
+  "Dividend Yield (%)": "#a78bfa",
+  "Market Cap (Cr)": "#f472b6",
+  "Current Price": "#34d399",
+  "P/B": "#fb923c",
+  "Book Value": "#38bdf8",
+  "Profit (Cr)": "#22d3ee",
+  "Revenue (Cr)": "#fde047",
+  "Promoter Holding (%)": "#f59e0b",
+};
 // ... existing imports
 export default function StockDashboard({ data }) {
   const {
