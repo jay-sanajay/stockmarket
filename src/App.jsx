@@ -3,7 +3,6 @@ import axios from "axios";
 import StockDashboard from "./StockDashboard";
 import "./App.css";
 
-
 function App() {
   const [stock, setStock] = useState("");
   const [data, setData] = useState(null);
@@ -16,11 +15,8 @@ function App() {
     setError("");
     setData(null);
     try {
-      const API_BASE = import.meta.env.VITE_BACKEND_URL;
-
-      const res = await axios.get(`${API_BASE}/analyze?stock=${stock}`);
-
-      //const res = await axios.get(`http://localhost:8000/analyze?stock=${stock}`);
+      // Replace with your deployed URL in production
+      const res = await axios.get(`http://localhost:8000/analyze?stock=${stock}`);
       if (res.data.error) {
         setError(res.data.error);
       } else {
@@ -34,10 +30,8 @@ function App() {
 
   return (
     <div className="app">
-      <h1 className="app-title"> JayQuant AI — Stock Advisor</h1>
-<p className="subtitle">SEBI-Style Reports | AI-Powered Insights</p>
-
-
+      <h1 className="app-title">JayQuant AI — Stock Advisor</h1>
+      <p className="subtitle">SEBI-Style Reports | AI-Powered Insights</p>
 
       <div className="search-bar">
         <input
@@ -52,6 +46,8 @@ function App() {
       {loading && <p className="loading">⏳ Analyzing stock...</p>}
       {error && <p className="error">{error}</p>}
 
+      {/* ✅ Final Verdict REMOVED */}
+      
       {data && <StockDashboard data={data} />}
     </div>
   );

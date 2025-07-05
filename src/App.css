@@ -69,3 +69,32 @@ button:hover {
   margin-top: -10px;
   margin-bottom: 20px;
 }
+.verdict-box {
+  background-color: #1e293b;
+  border: 2px solid #facc15;
+  color: #facc15;
+  padding: 1.2rem;
+  border-radius: 12px;
+  margin: 1.5rem auto;
+  max-width: 600px;
+  box-shadow: 0 0 12px #facc1580;
+  text-align: center;
+  animation: popIn 0.5s ease-in-out;
+}
+
+.verdict-text {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fef9c3;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

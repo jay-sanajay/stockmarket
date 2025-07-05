@@ -12,7 +12,6 @@ import {
   Cell,
 } from "recharts";
 
-// Updated color map without PEG Ratio or Face Value
 const colors = {
   "P/E": "#f87171",
   "ROE (%)": "#4ade80",
@@ -54,6 +53,27 @@ export default function StockDashboard({ data }) {
       color: getColor(label),
     }));
 
+  // Extract and color-code Final Verdict
+  const finalVerdictLine = full_report
+    .split("\n")
+    .find((line) => line.toLowerCase().includes("📌 final verdict"));
+
+  const verdictText = finalVerdictLine
+    ?.replace(/\*\*/g, "")
+    .replace("6. ", "")
+    .trim();
+
+  let verdictClass = "";
+  if (verdictText?.toLowerCase().includes("avoid")) verdictClass = "verdict-avoid";
+  else if (verdictText?.toLowerCase().includes("buy")) verdictClass = "verdict-buy";
+  else if (verdictText?.toLowerCase().includes("sell")) verdictClass = "verdict-sell";
+  else if (verdictText?.toLowerCase().includes("hold")) verdictClass = "verdict-hold";
+  else if (verdictText?.toLowerCase().includes("watch")) verdictClass = "verdict-watch";
+
+  const otherLines = full_report
+    .split("\n")
+    .filter((line) => !line.toLowerCase().includes("📌 final verdict"));
+
   return (
     <div className="dashboard">
       <h1 className="company-title">📊 {company}</h1>
@@ -61,7 +81,7 @@ export default function StockDashboard({ data }) {
       {/* Metric Cards */}
       <div className="metrics-grid">
         {Object.entries(ratios)
-          .filter(([label]) => label !== "PEG Ratio" && label !== "Face Value") // ✅ Exclude here
+          .filter(([label]) => label !== "PEG Ratio" && label !== "Face Value")
           .map(([label, val], index) => (
             <div
               key={index}
@@ -84,7 +104,12 @@ export default function StockDashboard({ data }) {
             <YAxis stroke="#ccc" />
             <Tooltip />
             <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-              <LabelList dataKey="value" position="top" fill="#fff" fontWeight="bold" />
+              <LabelList
+                dataKey="value"
+                position="top"
+                fill="#fff"
+                fontWeight="bold"
+              />
               {barData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
@@ -93,7 +118,7 @@ export default function StockDashboard({ data }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Order Summary Section */}
+      {/* Order Summary */}
       {order_summary && Object.keys(order_summary).length > 0 && (
         <div className="order-summary-section">
           <h2 className="order-summary-title">📦 Order Book Highlights</h2>
@@ -112,7 +137,7 @@ export default function StockDashboard({ data }) {
         </div>
       )}
 
-      {/* Chart */}
+      {/* Technical Chart */}
       <div className="chart-container">
         <h2>📉 6-Month Technical Chart</h2>
         <img
@@ -122,68 +147,62 @@ export default function StockDashboard({ data }) {
         />
       </div>
 
-     {/* Gemini SEBI Report */}
-<div className="report-container">
-  <h2 className="report-heading">AI SEBI Analyst Verdict</h2>
-  <div className="report-text">
-    {full_report.split("\n").map((line, idx) => {
-      const cleanLine = line.replace(/\*/g, "").trim();
+      {/* Gemini SEBI Report */}
+      <div className="report-container">
+        <h2 className="report-heading">🧠 Gemini SEBI-Style Report</h2>
+        <div className="report-text">
+          {otherLines.map((line, idx) => {
+            const cleanLine = line.replace(/\*/g, "").trim();
 
-      const sectionMap = {
-        "1. Company Overview": "report-section company-overview",
-        "2. Technical Chart Analysis Summary": "report-section technical-analysis",
-        "3. Pros and Cons": "report-section pros-cons",
-        "4. Suggested Strategy": "report-section investor-strategy",
-        "5. Gemini AI Verdict:": "report-subheading verdict",
-        "6. Final Verdict:": "report-subheading final-verdict",
-      };
+            const sectionMap = {
+              "1. Company Overview": "report-section company-overview",
+              "2. Technical Summary": "report-section technical-analysis",
+              "3. Pros and Cons": "report-section pros-cons",
+              "4. Investor Strategy": "report-section investor-strategy",
+              "5. Suggested Entry/Exit": "report-section entry-exit",
+            };
 
-      const verdictColors = {
-        "🟢 BUY": "buy",
-        "🔴 SELL": "sell",
-        "⚪ HOLD": "hold",
-      };
+            const classList = ["report-line"];
+            for (const key in sectionMap) {
+              if (cleanLine.startsWith(key)) classList.push(sectionMap[key]);
+            }
 
-      const classList = ["report-line"];
-      for (const key in sectionMap) {
-        if (cleanLine.startsWith(key)) classList.push(sectionMap[key]);
-      }
+            const customHeaders = {
+              "1. Company Overview": "1️⃣ Company Overview",
+              "2. Technical Summary": "📉 Technical Summary",
+              "3. Pros and Cons": "✅ Pros & ❌ Cons",
+              "4. Investor Strategy": "🎯 Investor Strategy",
+              "5. Suggested Entry/Exit": "⚖️ Entry & Exit Plan",
+            };
 
-      for (const vKey in verdictColors) {
-        if (cleanLine.includes(vKey)) classList.push(verdictColors[vKey]);
-      }
+            const headerKey = Object.keys(customHeaders).find((key) =>
+              cleanLine.startsWith(key)
+            );
 
-      // Custom styled section headers
-      const customHeaders = {
-        "1. Company Overview": "1️⃣ Company Overview",
-        "2. Technical Chart Analysis Summary": "📉 Technical Chart Analysis",
-        "3. Pros and Cons": "✅ Pros & ❌ Cons",
-        "4. Suggested Strategy": "🎯 Suggested Strategy",
-        "5. Gemini AI Verdict:": "💡 Gemini Verdict",
-        "6. Final Verdict:": "📌 Final Verdict",
-      };
+            if (headerKey) {
+              return (
+                <p key={idx} className={`${classList.join(" ")} section-title`}>
+                  {customHeaders[headerKey]}
+                </p>
+              );
+            }
 
-      const headerKey = Object.keys(customHeaders).find((key) =>
-        cleanLine.startsWith(key)
-      );
+            return (
+              <p key={idx} className={classList.join(" ")}>
+                {cleanLine}
+              </p>
+            );
+          })}
 
-      if (headerKey) {
-        return (
-          <p key={idx} className={`${classList.join(" ")} section-title`}>
-            {customHeaders[headerKey]}
-          </p>
-        );
-      }
-
-      return (
-        <p key={idx} className={classList.join(" ")}>
-          {cleanLine}
-        </p>
-      );
-    })}
-  </div>
-</div>
-
+          {/* Final Verdict shown separately */}
+          {verdictText && (
+            <div className={`verdict-highlight ${verdictClass}`}>
+              <h2>📌 Final Verdict</h2>
+              <p>{verdictText}</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
-} 
+}
