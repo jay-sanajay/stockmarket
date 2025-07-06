@@ -12,7 +12,7 @@ import pandas as pd
 load_dotenv()
 today = datetime.now().strftime("%B %d, %Y")
 
-GEMINI_API_KEY = "AIzaSyBS2waDRdjo2scdiEIwchU8VTw20sf5Qec"
+GEMINI_API_KEY = "AIzaSyAnJwje8ehmfVgtQDByXgYsUyqOJOA9WYs"
 NEWSDATA_API_KEY = "pub_48e1a7203f9c402ab31981ca24cfc2c6"
 
 # Gemini Setup
@@ -306,12 +306,42 @@ def analyze(stock: str = Query(...)):
             suggested = "⛔ Avoid"
             strategy_notes = "Bad metrics or high risk (debt, downtrend, overbought, etc.)"
 
-        if "buy" in suggested.lower():
-            entry_level = round(price * 0.95, 2)
-            exit_level = round(price * 1.15, 2)
-            entry_exit = f"📥 Entry: ₹{entry_level} | 🎯 Target: ₹{exit_level} | 🛑 Stop Loss: ₹{round(price * 0.90, 2)}"
+        entry_zones, target_zones = [], []
+        stop_loss_zone = None
+
+        if "buy" in suggested.lower() or suggested in ["⚠️ Watch", "🟡 Hold"]:
+    # calculate potential levels even if we don't recommend entry
+
+            if rsi < 60 and price > ma50:
+                entry_zones.append({
+                    "range": f"₹{round(ma50 * 0.98, 2)}–₹{round(ma50 * 1.02, 2)}",
+                    "reason": "Near MA50 support & RSI not overbought"
+                })
+            entry_zones.append({
+                "range": f"₹{round(price * 0.90, 2)}–₹{round(price * 0.95, 2)}",
+                "reason": "Moderate dip (~5–10%)"
+            })
+            if ma200 and price < ma200 * 1.05:
+                entry_zones.append({
+                    "range": f"₹{round(ma200 * 0.95, 2)}–₹{round(ma200, 2)}",
+                    "reason": "Deep support near 200‑day MA"
+                })
+            try:
+                lowest = float(entry_zones[-1]["range"].split("–")[0].replace("₹", ""))
+                stop_loss_zone = f"₹{round(lowest * 0.93, 2)} (7% below lower band)"
+            except:
+                stop_loss_zone = "Not defined"
+
+            target_zones.append({
+                "level": f"₹{round(ma50 * 1.15, 2)}",
+                "reason": "15% above MA50 — short/mid‑term target"
+            })
+            target_zones.append({
+                "level": f"₹{round(ma50 * 1.25, 2)}",
+                "reason": "25% above MA50 if momentum resumes"
+            })
         else:
-            entry_exit = "📤 Exit if holding | 🚫 No new entry"
+            stop_loss_zone = "N/A"
 
         today = datetime.now().strftime("%Y-%m-%d")
         headlines_text = "\n".join("- " + h for h in headlines) if headlines else "- No headlines available"
@@ -341,7 +371,6 @@ Headlines:
 
 🧠 Strategy-Based Verdict: {suggested}
 📌 Reason: {strategy_notes}
-{entry_exit}
 
 Strict FORMAT:
 1. Company Overview
@@ -353,8 +382,8 @@ Strict FORMAT:
 """
 
         gemini_report = model.generate_content(prompt).text.strip()
-        verdict_line = next((line for line in gemini_report.split("\n") if "📌 Final Verdict" in line), f"📌 Final Verdict: {suggested} — {strategy_notes}")
-        verdict = verdict_line
+        verdict = f"📌 Final Verdict: **{suggested}** — {strategy_notes}"
+
 
         log_verdict(stock.upper(), price, verdict)
 
@@ -385,7 +414,9 @@ Strict FORMAT:
             "verdict": verdict,
             "strategy_type": suggested,
             "strategy_reason": strategy_notes,
-            "entry_exit_plan": entry_exit
+            "entry_zones": entry_zones,
+            "stop_loss_zone": stop_loss_zone,
+            "target_zones": target_zones
         }
 
     except Exception as e:
