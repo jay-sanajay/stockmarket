@@ -12,7 +12,7 @@ import pandas as pd
 load_dotenv()
 today = datetime.now().strftime("%B %d, %Y")
 
-GEMINI_API_KEY = "AIzaSyDrOp4KNiFs98AKRnjemD-EqsigetuXuco"
+GEMINI_API_KEY = "AIzaSyBS2waDRdjo2scdiEIwchU8VTw20sf5Qec"
 NEWSDATA_API_KEY = "pub_48e1a7203f9c402ab31981ca24cfc2c6"
 
 # Gemini Setup
