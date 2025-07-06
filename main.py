@@ -130,50 +130,102 @@ def analyze(stock: str = Query(...)):
         hist = compute_technicals(hist)
         chart = generate_chart_base64(hist)
 
-        # Financial ratios
+        # Financial ratios & data
         pe = info.get("trailingPE")
+        pb = info.get("priceToBook")
+        eps = info.get("trailingEps")
+        book_value = info.get("bookValue")
         roe = info.get("returnOnEquity", 0) * 100 if info.get("returnOnEquity") else None
         roa = info.get("returnOnAssets", 0) * 100 if info.get("returnOnAssets") else None
+        roce = info.get("returnOnCapitalEmployed", 0) * 100 if info.get("returnOnCapitalEmployed") else None
         de_ratio = info.get("debtToEquity")
         div_yield = info.get("dividendYield", 0) * 100 if info.get("dividendYield") else 0
         mcap = info.get("marketCap", 0)
         price = info.get("currentPrice", 0)
+        revenue = info.get("totalRevenue", 0)
+        profit = info.get("netIncomeToCommon", 0)
         retail_flag = is_retail_stock(info)
 
         # External inputs
         sentiment, headlines = fetch_news_sentiment(stock)
         triggers = fetch_market_triggers()
 
-        # Gemini Prompt
-        prompt = f"""
-You are a SEBI-registered investment advisor. Write a detailed investment report for:
+        # Technicals
+        rsi = round(hist['RSI'].iloc[-1], 2)
+        ma50 = round(hist['MA50'].iloc[-1], 2)
+        ma200 = round(hist['MA200'].iloc[-1], 2)
+        trend = "Uptrend" if ma50 > ma200 else "Downtrend"
 
-Company: {info.get('longName')}
+        # Score system for verdict
+        score = 0
+        if rsi < 30:
+            score += 1
+        if ma50 > ma200:
+            score += 1
+        if "positive" in sentiment.lower():
+            score += 1
+
+        # Suggested verdict
+        if score >= 2:
+            suggested = "Buy"
+        elif score == 0:
+            suggested = "Avoid"
+        else:
+            suggested = "Watch"
+
+        # 📌 Gemini Prompt (enhanced)
+        prompt = f"""
+You are a SEBI-registered investment advisor. Analyze the following stock and prepare a detailed investment report.
+
+Stock Name: {info.get('longName')}
 Symbol: {stock.upper()}
 Sector: {info.get('sector')}
-Price: ₹{price}
 Date: {today}
+Price: ₹{price}
 Market Cap: ₹{mcap/1e7:.2f} Cr
-P/E: {pe}, ROE: {roe}%, ROA: {roa}%, Debt/Equity: {de_ratio}, Dividend Yield: {div_yield}%
-Is Retail-Focused Stock: {"Yes" if retail_flag else "No"}
+Is Retail-Focused: {"Yes" if retail_flag else "No"}
 
-Recent News Headlines:\n{chr(10).join('- ' + h for h in headlines)}
+Financials:
+- P/E: {pe}
+- P/B: {pb}
+- EPS: {eps}
+- Book Value: ₹{book_value}
+- ROE: {roe}%
+- ROA: {roa}%
+- ROCE: {roce}%
+- Debt/Equity: {de_ratio}
+- Dividend Yield: {div_yield}%
+- Revenue: ₹{revenue/1e7:.2f} Cr
+- Profit: ₹{profit/1e7:.2f} Cr
+
+Technical Indicators:
+- RSI: {rsi}
+- MA50: {ma50}
+- MA200: {ma200}
+- Trend: {trend}
+
 News Sentiment: {sentiment}
 Market Activity: {triggers}
-RSI: {round(hist['RSI'].iloc[-1], 2)} | MA50: {round(hist['MA50'].iloc[-1], 2)} | MA200: {round(hist['MA200'].iloc[-1], 2)}
+Recent News Headlines:
+{chr(10).join("- " + h for h in headlines)}
 
-Respond in this format:
+Based on the above data, our internal scoring system gives a preliminary tag: **{suggested}**
+
+🎯 FORMAT:
 1. *Company Overview*
-2. *Technical Summary* (RSI, MA50/200, chart trend)
+2. *Technical Summary*
 3. *Pros and Cons*
 4. *Investor Strategy*
-    - Growth: ✅/⚠️/❌
-    - Value: ✅/⚠️/❌
-    - Trader: ✅/⚠️/❌
+   - Growth: ✅/⚠️/❌
+   - Value: ✅/⚠️/❌
+   - Trader: ✅/⚠️/❌
 5. *Suggested Entry/Exit*
-6. *📌 Final Verdict:* [Buy / Watch / Avoid] + 1-line reason
+6. *📌 Final Verdict:* Must be only one of — **Buy / Watch / Avoid** — and give 1-line reason.
+
+Be confident. Do NOT return "Watch" unless all indicators are mixed or inconclusive.
 """
 
+        # Generate Gemini Report
         gemini_report = model.generate_content(prompt).text.strip()
         verdict_line = [line for line in gemini_report.split("\n") if "📌 Final Verdict" in line]
         verdict = verdict_line[0] if verdict_line else "Verdict missing"
@@ -185,15 +237,18 @@ Respond in this format:
             "symbol": stock.upper(),
             "ratios": {
                 "P/E": pe,
+                "P/B": pb,
+                "EPS": eps,
+                "Book Value": book_value,
                 "ROE (%)": round(roe, 2) if roe else None,
                 "ROA (%)": round(roa, 2) if roa else None,
+                "ROCE (%)": round(roce, 2) if roce else None,
                 "Debt/Equity": de_ratio,
                 "Dividend Yield (%)": round(div_yield, 2),
                 "Market Cap (Cr)": round(mcap / 1e7, 2),
                 "Current Price": price,
-                "P/B": info.get("priceToBook"),
-                "Revenue (Cr)": round(info.get("totalRevenue", 0) / 1e7, 2) if info.get("totalRevenue") else None,
-                "Profit (Cr)": round(info.get("netIncomeToCommon", 0) / 1e7, 2) if info.get("netIncomeToCommon") else None,
+                "Revenue (Cr)": round(revenue / 1e7, 2) if revenue else None,
+                "Profit (Cr)": round(profit / 1e7, 2) if profit else None
             },
             "chart_base64": chart,
             "news_sentiment": sentiment,
