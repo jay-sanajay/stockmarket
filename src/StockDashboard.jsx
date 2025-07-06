@@ -12,7 +12,6 @@ import {
   Cell,
 } from "recharts";
 
-// ✅ Fix: Add this block
 const colors = {
   "P/E": "#f87171",
   "ROE (%)": "#4ade80",
@@ -27,7 +26,7 @@ const colors = {
   "Revenue (Cr)": "#fde047",
   "Promoter Holding (%)": "#f59e0b",
 };
-// ... existing imports
+
 export default function StockDashboard({ data }) {
   const {
     company,
@@ -38,6 +37,8 @@ export default function StockDashboard({ data }) {
     news_sentiment,
     news_headlines,
     market_triggers,
+    strategy_type,
+    strategy_reason,
   } = data;
 
   const getColor = (label) => colors[label] || "#cbd5e1";
@@ -63,21 +64,15 @@ export default function StockDashboard({ data }) {
       color: getColor(label),
     }));
 
-  const finalVerdictLine = full_report
-    .split("\n")
-    .find((line) => line.toLowerCase().includes("📌 final verdict"));
-
-  const verdictText = finalVerdictLine
-    ?.replace(/\*\*/g, "")
-    .replace("6. ", "")
-    .trim();
+  const verdictText = strategy_type ?? "⛔ Avoid";
+  const reasonText = strategy_reason ?? "";
 
   let verdictClass = "";
-  if (verdictText?.toLowerCase().includes("avoid")) verdictClass = "verdict-avoid";
-  else if (verdictText?.toLowerCase().includes("buy")) verdictClass = "verdict-buy";
-  else if (verdictText?.toLowerCase().includes("sell")) verdictClass = "verdict-sell";
-  else if (verdictText?.toLowerCase().includes("hold")) verdictClass = "verdict-hold";
-  else if (verdictText?.toLowerCase().includes("watch")) verdictClass = "verdict-watch";
+  if (verdictText.toLowerCase().includes("avoid")) verdictClass = "verdict-avoid";
+  else if (verdictText.toLowerCase().includes("buy")) verdictClass = "verdict-buy";
+  else if (verdictText.toLowerCase().includes("sell")) verdictClass = "verdict-sell";
+  else if (verdictText.toLowerCase().includes("hold")) verdictClass = "verdict-hold";
+  else if (verdictText.toLowerCase().includes("watch")) verdictClass = "verdict-watch";
 
   const otherLines = full_report
     .split("\n")
@@ -87,7 +82,6 @@ export default function StockDashboard({ data }) {
     <div className="dashboard">
       <h1 className="company-title">📊 {company}</h1>
 
-      {/* Metric Cards */}
       <div className="metrics-grid">
         {Object.entries(ratios)
           .filter(([label]) => label !== "PEG Ratio" && label !== "Face Value")
@@ -103,7 +97,6 @@ export default function StockDashboard({ data }) {
           ))}
       </div>
 
-      {/* Bar Chart */}
       <div className="bar-chart-section">
         <h2>📊 Fundamental Metrics (Bar Graph)</h2>
         <ResponsiveContainer width="100%" height={350}>
@@ -127,7 +120,6 @@ export default function StockDashboard({ data }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Order Summary */}
       {order_summary && Object.keys(order_summary).length > 0 && (
         <div className="order-summary-section">
           <h2 className="order-summary-title">📦 Order Book Highlights</h2>
@@ -146,7 +138,6 @@ export default function StockDashboard({ data }) {
         </div>
       )}
 
-      {/* Technical Chart */}
       <div className="chart-container">
         <h2>📉 6-Month Technical Chart</h2>
         <img
@@ -156,7 +147,6 @@ export default function StockDashboard({ data }) {
         />
       </div>
 
-      {/* 📰 News & Market Triggers */}
       <div className="report-container">
         <h2 className="report-heading">📰 News & Market Sentiment</h2>
         <p><strong>News Sentiment:</strong> {news_sentiment}</p>
@@ -170,7 +160,6 @@ export default function StockDashboard({ data }) {
         )}
       </div>
 
-      {/* Gemini Report */}
       <div className="report-container">
         <h2 className="report-heading">🧠 Gemini SEBI-Style Report</h2>
         <div className="report-text">
@@ -180,8 +169,8 @@ export default function StockDashboard({ data }) {
               "1. Company Overview": "report-section company-overview",
               "2. Technical Summary": "report-section technical-analysis",
               "3. Pros and Cons": "report-section pros-cons",
-              "4. Investor Strategy": "report-section investor-strategy",
-              "5. Suggested Entry/Exit": "report-section entry-exit",
+              "4. Strategy": "report-section investor-strategy",
+              "5. Entry/Exit": "report-section entry-exit",
             };
             const classList = ["report-line"];
             for (const key in sectionMap) {
@@ -191,8 +180,8 @@ export default function StockDashboard({ data }) {
               "1. Company Overview": "1️⃣ Company Overview",
               "2. Technical Summary": "📉 Technical Summary",
               "3. Pros and Cons": "✅ Pros & ❌ Cons",
-              "4. Investor Strategy": "🎯 Investor Strategy",
-              "5. Suggested Entry/Exit": "⚖️ Entry & Exit Plan",
+              "4. Strategy": "🎯 Investor Strategy",
+              "5. Entry/Exit": "⚖️ Entry & Exit Plan",
             };
             const headerKey = Object.keys(customHeaders).find((key) =>
               cleanLine.startsWith(key)
@@ -211,11 +200,11 @@ export default function StockDashboard({ data }) {
             );
           })}
 
-          {/* Final Verdict shown separately */}
           {verdictText && (
             <div className={`verdict-highlight ${verdictClass}`}>
               <h2>📌 Final Verdict</h2>
-              <p>{verdictText}</p>
+              <p><strong>{verdictText}</strong></p>
+              {reasonText && <p>{reasonText}</p>}
             </div>
           )}
         </div>
