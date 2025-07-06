@@ -70,12 +70,15 @@ export default function StockDashboard({ data }) {
   const verdictText = strategy_type ?? "⛔ Avoid";
   const reasonText = strategy_reason ?? "";
 
-  let verdictClass = "";
-  if (verdictText.toLowerCase().includes("avoid")) verdictClass = "verdict-avoid";
-  else if (verdictText.toLowerCase().includes("buy")) verdictClass = "verdict-buy";
-  else if (verdictText.toLowerCase().includes("sell")) verdictClass = "verdict-sell";
-  else if (verdictText.toLowerCase().includes("hold")) verdictClass = "verdict-hold";
-  else if (verdictText.toLowerCase().includes("watch")) verdictClass = "verdict-watch";
+ let verdictClass = "";
+const cleanedVerdict = verdictText.toLowerCase().replace(/[^a-z]/g, "").trim();
+
+if (cleanedVerdict.startsWith("avoid")) verdictClass = "verdict-avoid";
+else if (cleanedVerdict.startsWith("buy")) verdictClass = "verdict-buy";
+else if (cleanedVerdict.startsWith("sell")) verdictClass = "verdict-sell";
+else if (cleanedVerdict.startsWith("hold")) verdictClass = "verdict-hold";
+else if (cleanedVerdict.startsWith("watch")) verdictClass = "verdict-watch";
+
 
   const otherLines = full_report
     .split("\n")
