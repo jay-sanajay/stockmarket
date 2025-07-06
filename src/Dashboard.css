@@ -189,3 +189,38 @@ body, .dashboard {
   margin-bottom: 0.4rem;
   color: #e2e8f0;
 }
+.entry-section,
+.target-section,
+.stoploss-section {
+  background-color: #f9fafb;
+  border-left: 5px solid #60a5fa;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.entry-section h3,
+.target-section h3,
+.stoploss-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.entry-section ul,
+.target-section ul {
+  padding-left: 1.25rem;
+}
+
+.entry-section li,
+.target-section li {
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.stoploss-section p {
+  font-weight: bold;
+  color: #dc2626;
+}
