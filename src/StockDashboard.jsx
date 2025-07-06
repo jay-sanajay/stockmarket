@@ -39,6 +39,9 @@ export default function StockDashboard({ data }) {
     market_triggers,
     strategy_type,
     strategy_reason,
+    entry_zones,
+    stop_loss_zone,
+    target_zones,
   } = data;
 
   const getColor = (label) => colors[label] || "#cbd5e1";
@@ -209,6 +212,42 @@ export default function StockDashboard({ data }) {
           )}
         </div>
       </div>
+
+      {(entry_zones?.length > 0 || stop_loss_zone || target_zones?.length > 0) && (
+        <div className="report-container">
+          <h2 className="report-heading">🎯 Entry & Exit Strategy</h2>
+          {entry_zones?.length > 0 && (
+            <div className="entry-section">
+              <h3>🛒 Entry Zones:</h3>
+              <ul>
+                {entry_zones.map((zone, idx) => (
+                  <li key={idx}>
+                    <strong>{zone.range}</strong> — {zone.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {target_zones?.length > 0 && (
+            <div className="target-section">
+              <h3>🎯 Target Zones:</h3>
+              <ul>
+                {target_zones.map((zone, idx) => (
+                  <li key={idx}>
+                    <strong>{zone.level}</strong> — {zone.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {stop_loss_zone && (
+            <div className="stoploss-section">
+              <h3>🛑 Stop Loss:</h3>
+              <p>{stop_loss_zone}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
