@@ -112,22 +112,50 @@ Write the sentiment as a one-word summary first, followed by a brief reason base
     except Exception as e:
         return f"Sentiment analysis error: {str(e)}", []
 
+import requests
 
+import requests
 
 def fetch_market_triggers():
     try:
-        url = "https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        res = requests.get(url, headers=headers, timeout=5)
-        soup = BeautifulSoup(res.text, "html.parser")
-        data = soup.find_all("div", class_="FL PR5")
+        url = "https://www.nseindia.com/api/fiidiiTradeReact"
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept": "application/json",
+            "Referer": "https://www.nseindia.com/"
+        }
 
-        fii = data[0].get_text(strip=True) if len(data) > 0 else "FII data unavailable"
-        dii = data[1].get_text(strip=True) if len(data) > 1 else "DII data unavailable"
-        return f"FII: {fii}, DII: {dii}"
+        # Start session and get initial cookies
+        session = requests.Session()
+        session.headers.update(headers)
+        session.get("https://www.nseindia.com", timeout=5)
+
+        res = session.get(url, timeout=5)
+        res.raise_for_status()
+
+        try:
+            data = res.json()
+        except ValueError:
+            return "Market trigger fetch error: Invalid JSON from NSE"
+
+        if not isinstance(data, dict) or "data" not in data or not data["data"]:
+            return "Market trigger fetch error: Unexpected API structure"
+
+        latest = data["data"][-1]
+
+        date = latest.get("date")
+        fii_buy = latest.get("buyValue", "N/A")
+        fii_sell = latest.get("sellValue", "N/A")
+        dii_buy = latest.get("buyValueDii", "N/A")
+        dii_sell = latest.get("sellValueDii", "N/A")
+
+        return f"📅 {date} | FII: Buy ₹{fii_buy:,} Cr / Sell ₹{fii_sell:,} Cr | DII: Buy ₹{dii_buy:,} Cr / Sell ₹{dii_sell:,} Cr"
 
     except Exception as e:
-        return "Market triggers unavailable"
+        return f"Market trigger fetch error: {str(e)}"
+
 
 
 def is_retail_stock(info):
@@ -168,7 +196,6 @@ def analyze(stock: str = Query(...)):
         hist = compute_technicals(hist)
         chart = generate_chart_base64(hist)
 
-        # ==== Financials ====
         pe = info.get("trailingPE") if info.get("trailingPE", 0) > 0 else None
         pb = info.get("priceToBook")
         eps = info.get("trailingEps")
@@ -187,17 +214,16 @@ def analyze(stock: str = Query(...)):
         profit = info.get("netIncomeToCommon", 0)
         retail_flag = is_retail_stock(info)
 
-        # ==== External Data ====
         sentiment, headlines = fetch_news_sentiment(stock)
+        if not sentiment:
+            sentiment = "Neutral"
         triggers = fetch_market_triggers()
 
-        # ==== Technicals ====
         rsi = round(hist["RSI"].iloc[-1], 2)
         ma50 = round(hist["MA50"].iloc[-1], 2)
         ma200 = round(hist["MA200"].iloc[-1], 2)
         trend = "Uptrend" if ma50 > ma200 else "Downtrend"
 
-        # ==== Scoring Logic ====
         score = 0
         explanations = {}
 
@@ -209,16 +235,16 @@ def analyze(stock: str = Query(...)):
             explanations["RSI"] = "Neutral"
 
         if ma50 > ma200:
-            score += 2; explanations["MA Trend"] = "Uptrend (MA50 > MA200)"
+            score += 2; explanations["MA Trend"] = "Uptrend"
         else:
-            explanations["MA Trend"] = "Downtrend (MA50 <= MA200)"
+            score -= 0.5; explanations["MA Trend"] = "Downtrend"
 
         if "positive" in sentiment.lower():
             score += 1; explanations["Sentiment"] = "Positive"
         elif "negative" in sentiment.lower():
             score -= 1; explanations["Sentiment"] = "Negative"
         else:
-            explanations["Sentiment"] = "Neutral"
+            score += 0.5; explanations["Sentiment"] = "Neutral"
 
         if pe and pe < 15:
             score += 1; explanations["P/E"] = f"Attractive: {pe}"
@@ -230,19 +256,64 @@ def analyze(stock: str = Query(...)):
         if de_ratio and de_ratio < 1:
             score += 1; explanations["D/E"] = f"Healthy: {de_ratio}"
         elif de_ratio and de_ratio > 2:
-            score -= 1; explanations["D/E"] = f"Risky: {de_ratio}"
+            if roe and roe > 30 and "services" in info.get("industry", "").lower():
+                explanations["D/E"] = f"High but acceptable for IT: {de_ratio}"
+            else:
+                score -= 0.5; explanations["D/E"] = f"Risky: {de_ratio}"
         else:
             explanations["D/E"] = f"Moderate: {de_ratio}"
 
-        # ==== Verdict Logic ====
-        if score >= 4:
-            suggested = "Buy"
-        elif score <= 1:
-            suggested = "Avoid"
-        else:
-            suggested = "Sell"  # Replace 'Watch' with actionable 'Sell'
+        if roe and roe > 15:
+            score += 1; explanations["ROE"] = f"Strong: {roe:.2f}%"
+        elif roe and roe < 5:
+            score -= 1; explanations["ROE"] = f"Weak: {roe:.2f}%"
 
-        # ==== GEMINI Prompt ====
+        if roa and roa > 10:
+            score += 1; explanations["ROA"] = f"Efficient: {roa:.2f}%"
+
+        if profit and revenue and (profit / revenue) > 0.15:
+            score += 1; explanations["Profit Margin"] = f"{round((profit / revenue)*100, 2)}%"
+
+        if roce and roce > 12:
+            score += 1; explanations["ROCE"] = f"Efficient: {roce:.2f}%"
+        elif roce and roce < 5:
+            score -= 1; explanations["ROCE"] = f"Poor: {roce:.2f}%"
+
+        if roe and roe > 40 and mcap > 1e12 and "services" in info.get("industry", "").lower():
+            if score < 4:
+                score = 4
+                explanations["Fundamental Override"] = "High ROE & large-cap IT company"
+
+        if score >= 7 and roe and roe > 20 and div_yield > 2:
+            suggested = "✅ Strong Buy"
+            strategy_notes = "Strong EPS, low P/E, uptrend, positive sentiment"
+        elif score >= 5:
+            suggested = "✅ Buy"
+            strategy_notes = "Good fundamentals, uptrend or oversold"
+        elif score == 4:
+            suggested = "📊 Long-Term Buy"
+            strategy_notes = "Strong fundamentals, but downtrend or neutral macro"
+        elif score == 3:
+            suggested = "🟡 Hold"
+            strategy_notes = "Mixed signals. Hold and monitor for clearer direction."
+        elif score == 2:
+            suggested = "📈 Short-Term Buy"
+            strategy_notes = "Technical bounce expected (e.g., oversold RSI)"
+        elif score == 1:
+            suggested = "⚠️ Watch"
+            strategy_notes = "Weak indicators. Wait for confirmation."
+        else:
+            suggested = "⛔ Avoid"
+            strategy_notes = "Bad metrics or high risk (debt, downtrend, overbought, etc.)"
+
+        if "buy" in suggested.lower():
+            entry_level = round(price * 0.95, 2)
+            exit_level = round(price * 1.15, 2)
+            entry_exit = f"📥 Entry: ₹{entry_level} | 🎯 Target: ₹{exit_level} | 🛑 Stop Loss: ₹{round(price * 0.90, 2)}"
+        else:
+            entry_exit = "📤 Exit if holding | 🚫 No new entry"
+
+        today = datetime.now().strftime("%Y-%m-%d")
         headlines_text = "\n".join("- " + h for h in headlines) if headlines else "- No headlines available"
         prompt = f"""
 You are a SEBI-registered investment advisor. Analyze the following stock and prepare a final investment report.
@@ -252,7 +323,7 @@ Symbol: {stock.upper()}
 Date: {today}
 Current Price: ₹{price}
 Market Cap: ₹{mcap/1e7:.2f} Cr
-Retail Stock: {"Yes" if retail_flag else "No"}
+Retail Stock: {'Yes' if retail_flag else 'No'}
 
 Financials:
 - P/E: {pe}, P/B: {pb}, EPS: {eps}, Book Value: ₹{book_value}
@@ -265,12 +336,12 @@ Technical:
 
 News Sentiment: {sentiment}
 Market Activity: {triggers}
-Headlines:\n{headlines_text}
+Headlines:
+{headlines_text}
 
-🎯 INTERNAL SYSTEM VERDICT: **{suggested}**
-
-📌 Final Verdict (must be same): **{suggested}** — Explain in one line why.
-Give clear entry or exit strategy and specific investor recommendation for Growth, Value, Trader.
+🧠 Strategy-Based Verdict: {suggested}
+📌 Reason: {strategy_notes}
+{entry_exit}
 
 Strict FORMAT:
 1. Company Overview
@@ -282,7 +353,7 @@ Strict FORMAT:
 """
 
         gemini_report = model.generate_content(prompt).text.strip()
-        verdict_line = next((line for line in gemini_report.split("\n") if "📌 Final Verdict" in line), f"📌 Final Verdict: {suggested}")
+        verdict_line = next((line for line in gemini_report.split("\n") if "📌 Final Verdict" in line), f"📌 Final Verdict: {suggested} — {strategy_notes}")
         verdict = verdict_line
 
         log_verdict(stock.upper(), price, verdict)
@@ -311,7 +382,10 @@ Strict FORMAT:
             "signal_score": score,
             "signal_breakdown": explanations,
             "full_report": gemini_report,
-            "verdict": verdict
+            "verdict": verdict,
+            "strategy_type": suggested,
+            "strategy_reason": strategy_notes,
+            "entry_exit_plan": entry_exit
         }
 
     except Exception as e:
