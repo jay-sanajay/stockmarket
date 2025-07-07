@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const API_BASE = "https://stockmarket-rz6w.onrender.com"; // ✅ Your FastAPI backend base URL
+
 const LiveStockSearch = ({ value, onChange }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [input, setInput] = useState(value || "");
@@ -20,14 +22,13 @@ const LiveStockSearch = ({ value, onChange }) => {
 
   const fetchSuggestions = async (search) => {
     try {
-      const res = await axios.get(
-        `https://query1.finance.yahoo.com/v1/finance/search?q=${search}&lang=en&region=IN`
-      );
-      const valid = res.data.quotes.filter((item) =>
-        item.symbol.endsWith(".NS") || item.symbol.endsWith(".BO")
+      const res = await axios.get(`${API_BASE}/yahoo_search?q=${search}`);
+      const valid = res.data.quotes.filter(
+        (item) => item.symbol.endsWith(".NS") || item.symbol.endsWith(".BO")
       );
       setSuggestions(valid.slice(0, 6)); // Top 6 results
-    } catch {
+    } catch (err) {
+      console.error("Suggestion fetch error:", err);
       setSuggestions([]);
     }
   };
@@ -35,18 +36,18 @@ const LiveStockSearch = ({ value, onChange }) => {
   const handleSelect = (symbol) => {
     setInput(symbol);
     setSuggestions([]);
-    onChange(symbol);
+    onChange(symbol); // Notify parent
   };
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
       <input
         type="text"
-        placeholder="Search NSE/BSE stock (e.g., TCS, IRFC)"
+        placeholder="Search NSE/BSE stock (e.g., TCS.NS, INFY.NS)"
         value={input}
         onChange={(e) => {
           setInput(e.target.value);
-          onChange(e.target.value);
+          onChange(e.target.value); // Update parent state too
         }}
         style={{ width: "300px", padding: "8px" }}
       />

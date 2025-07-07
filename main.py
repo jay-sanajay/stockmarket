@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from dotenv import load_dotenv
 import pandas as pd
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 load_dotenv()
 today = datetime.now().strftime("%B %d, %Y")
@@ -28,7 +31,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+@app.get("/yahoo_search")
+def yahoo_search(q: str):
+    try:
+        url = f"https://query1.finance.yahoo.com/v1/finance/search?q={q}&lang=en&region=IN"
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        res = requests.get(url, headers=headers)
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        return {"error": str(e)}
 # ==== Chart and Technicals ====
 def generate_chart_base64(hist):
     plt.figure(figsize=(10, 4))
