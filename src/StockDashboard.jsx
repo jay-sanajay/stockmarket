@@ -30,22 +30,27 @@ const colors = {
 export default function StockDashboard({ data }) {
   const {
     company,
-    ratios,
+    ratios = {},
     chart_base64,
-    full_report,
+    full_report = "",
     order_summary,
     news_sentiment,
     news_headlines,
     market_triggers,
     strategy_type,
     strategy_reason,
-    entry_zones,
+    entry_zones = [],
     stop_loss_zone,
-    target_zones,
+    target_zones = [],
   } = data;
-  const reasonText = strategy_reason || "";
 
+  const reasonText = strategy_reason || "";
   const getColor = (label) => colors[label] || "#cbd5e1";
+
+  // Logging for debug
+  console.log("📊 ENTRY ZONES:", entry_zones);
+  console.log("🎯 TARGET ZONES:", target_zones);
+  console.log("🛑 STOP LOSS:", stop_loss_zone);
 
   const barData = Object.entries(ratios)
     .filter(([label, value]) =>
@@ -70,16 +75,13 @@ export default function StockDashboard({ data }) {
 
   const verdictText = data.verdict || "📌 Final Verdict: ⛔ Avoid — No clear signal.";
 
-let verdictClass = "";
-const verdictLower = (data.strategy_type || verdictText).toLowerCase();
-
-if (verdictLower.includes("avoid")) verdictClass = "verdict-avoid";
-else if (verdictLower.includes("buy")) verdictClass = "verdict-buy";
-else if (verdictLower.includes("sell")) verdictClass = "verdict-sell";
-else if (verdictLower.includes("hold")) verdictClass = "verdict-hold";
-else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
-
-
+  let verdictClass = "";
+  const verdictLower = (strategy_type || verdictText).toLowerCase();
+  if (verdictLower.includes("avoid")) verdictClass = "verdict-avoid";
+  else if (verdictLower.includes("buy")) verdictClass = "verdict-buy";
+  else if (verdictLower.includes("sell")) verdictClass = "verdict-sell";
+  else if (verdictLower.includes("hold")) verdictClass = "verdict-hold";
+  else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
 
   const otherLines = full_report
     .split("\n")
@@ -89,6 +91,12 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
     <div className="dashboard">
       <h1 className="company-title">📊 {company}</h1>
 
+      {/* Fallback Data Dump for Debug */}
+      <pre className="debug-box">
+        {JSON.stringify({ entry_zones, target_zones, stop_loss_zone }, null, 2)}
+      </pre>
+
+      {/* Metrics */}
       <div className="metrics-grid">
         {Object.entries(ratios)
           .filter(([label]) => label !== "PEG Ratio" && label !== "Face Value")
@@ -104,6 +112,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
           ))}
       </div>
 
+      {/* Bar Chart */}
       <div className="bar-chart-section">
         <h2>📊 Fundamental Metrics (Bar Graph)</h2>
         <ResponsiveContainer width="100%" height={350}>
@@ -113,12 +122,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
             <YAxis stroke="#ccc" />
             <Tooltip />
             <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-              <LabelList
-                dataKey="value"
-                position="top"
-                fill="#fff"
-                fontWeight="bold"
-              />
+              <LabelList dataKey="value" position="top" fill="#fff" fontWeight="bold" />
               {barData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
@@ -127,6 +131,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
         </ResponsiveContainer>
       </div>
 
+      {/* Order Book */}
       {order_summary && Object.keys(order_summary).length > 0 && (
         <div className="order-summary-section">
           <h2 className="order-summary-title">📦 Order Book Highlights</h2>
@@ -145,6 +150,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
         </div>
       )}
 
+      {/* Technical Chart */}
       <div className="chart-container">
         <h2>📉 6-Month Technical Chart</h2>
         <img
@@ -154,6 +160,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
         />
       </div>
 
+      {/* News Sentiment */}
       <div className="report-container">
         <h2 className="report-heading">📰 News & Market Sentiment</h2>
         <p><strong>News Sentiment:</strong> {news_sentiment}</p>
@@ -167,6 +174,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
         )}
       </div>
 
+      {/* Gemini SEBI-Style Report */}
       <div className="report-container">
         <h2 className="report-heading">🧠 Gemini SEBI-Style Report</h2>
         <div className="report-text">
@@ -200,11 +208,7 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
                 </p>
               );
             }
-            return (
-              <p key={idx} className={classList.join(" ")}>
-                {cleanLine}
-              </p>
-            );
+            return <p key={idx} className={classList.join(" ")}>{cleanLine}</p>;
           })}
 
           {verdictText && (
@@ -217,33 +221,33 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
         </div>
       </div>
 
-      {(entry_zones?.length > 0 || stop_loss_zone || target_zones?.length > 0) && (
+      {/* Entry/Exit Strategy */}
+      {(entry_zones.length > 0 || target_zones.length > 0 || stop_loss_zone) && (
         <div className="report-container">
           <h2 className="report-heading">🎯 Entry & Exit Strategy</h2>
-          {entry_zones?.length > 0 && (
+
+          {entry_zones.length > 0 && (
             <div className="entry-section">
               <h3>🛒 Entry Zones:</h3>
               <ul>
                 {entry_zones.map((zone, idx) => (
-                  <li key={idx}>
-                    <strong>{zone.range}</strong> — {zone.reason}
-                  </li>
+                  <li key={idx}><strong>{zone.range}</strong> — {zone.reason}</li>
                 ))}
               </ul>
             </div>
           )}
-          {target_zones?.length > 0 && (
+
+          {target_zones.length > 0 && (
             <div className="target-section">
               <h3>🎯 Target Zones:</h3>
               <ul>
                 {target_zones.map((zone, idx) => (
-                  <li key={idx}>
-                    <strong>{zone.level}</strong> — {zone.reason}
-                  </li>
+                  <li key={idx}><strong>{zone.level}</strong> — {zone.reason}</li>
                 ))}
               </ul>
             </div>
           )}
+
           {stop_loss_zone && (
             <div className="stoploss-section">
               <h3>🛑 Stop Loss:</h3>
@@ -255,3 +259,4 @@ else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
     </div>
   );
 }
+
