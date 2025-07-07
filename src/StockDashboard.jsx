@@ -43,6 +43,7 @@ export default function StockDashboard({ data }) {
     stop_loss_zone,
     target_zones,
   } = data;
+  const reasonText = strategy_reason || "";
 
   const getColor = (label) => colors[label] || "#cbd5e1";
 
@@ -68,10 +69,9 @@ export default function StockDashboard({ data }) {
     }));
 
   const verdictText = data.verdict || "📌 Final Verdict: ⛔ Avoid — No clear signal.";
-let verdictClass = "";
 
-// Detect type from `strategy_type` or verdict text
-const verdictLower = (strategy_type || verdictText).toLowerCase();
+let verdictClass = "";
+const verdictLower = (data.strategy_type || verdictText).toLowerCase();
 
 if (verdictLower.includes("avoid")) verdictClass = "verdict-avoid";
 else if (verdictLower.includes("buy")) verdictClass = "verdict-buy";
