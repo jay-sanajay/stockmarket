@@ -304,5 +304,11 @@
     "date": "2025-07-07",
     "price": 1629.1,
     "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udfe1 Hold** \u2014 Mixed signals. Hold and monitor for clearer direction."
+  },
+  {
+    "symbol": "NTPC.NS",
+    "date": "2025-07-07",
+    "price": 336.25,
+    "verdict": "\ud83d\udccc Final Verdict: **\u26d4 Avoid** \u2014 Bad metrics or high risk (debt, downtrend, overbought, etc.)"
   }
 ]

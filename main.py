@@ -309,7 +309,7 @@ def analyze(stock: str = Query(...)):
         entry_zones, target_zones = [], []
         stop_loss_zone = None
 
-        if "buy" in suggested.lower() or suggested in ["⚠️ Watch", "🟡 Hold","⛔ Avoid"]:
+        if "buy" in suggested.lower() or suggested in ["⚠️ Watch", "🟡 Hold"]:
     # calculate potential levels even if we don't recommend entry
 
             if rsi < 60 and price > ma50:
