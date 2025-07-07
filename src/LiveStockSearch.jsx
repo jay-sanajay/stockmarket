@@ -1,7 +1,7 @@
 // LiveStockSearch.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import "./LiveStockSearch.css";
 const API_BASE = "https://stockmarket-rz6w.onrender.com"; // ✅ Your FastAPI backend base URL
 
 const LiveStockSearch = ({ value, onChange }) => {
