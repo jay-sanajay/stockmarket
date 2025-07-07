@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import StockDashboard from "./StockDashboard";
 import "./App.css";
+import LiveStockSearch from "./LiveStockSearch";
 
 function App() {
   const [stock, setStock] = useState("");
@@ -36,14 +37,10 @@ function App() {
       <p className="subtitle">SEBI-Style Reports | AI-Powered Insights</p>
 
       <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Enter stock symbol (e.g., IRFC.NS)"
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
-        />
-        <button onClick={handleAnalyze}>Analyze</button>
-      </div>
+  <LiveStockSearch value={stock} onChange={setStock} />
+  <button onClick={handleAnalyze}>Analyze</button>
+</div>
+
 
       {loading && <p className="loading">⏳ Analyzing stock...</p>}
       {error && <p className="error">{error}</p>}
