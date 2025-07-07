@@ -67,17 +67,18 @@ export default function StockDashboard({ data }) {
       color: getColor(label),
     }));
 
-  const verdictText = strategy_type ?? "⛔ Avoid";
-  const reasonText = strategy_reason ?? "";
+  const verdictText = data.verdict || "📌 Final Verdict: ⛔ Avoid — No clear signal.";
+let verdictClass = "";
 
- let verdictClass = "";
-const cleanedVerdict = verdictText.toLowerCase().replace(/[^a-z]/g, "").trim();
+// Detect type from `strategy_type` or verdict text
+const verdictLower = (strategy_type || verdictText).toLowerCase();
 
-if (cleanedVerdict.startsWith("avoid")) verdictClass = "verdict-avoid";
-else if (cleanedVerdict.startsWith("buy")) verdictClass = "verdict-buy";
-else if (cleanedVerdict.startsWith("sell")) verdictClass = "verdict-sell";
-else if (cleanedVerdict.startsWith("hold")) verdictClass = "verdict-hold";
-else if (cleanedVerdict.startsWith("watch")) verdictClass = "verdict-watch";
+if (verdictLower.includes("avoid")) verdictClass = "verdict-avoid";
+else if (verdictLower.includes("buy")) verdictClass = "verdict-buy";
+else if (verdictLower.includes("sell")) verdictClass = "verdict-sell";
+else if (verdictLower.includes("hold")) verdictClass = "verdict-hold";
+else if (verdictLower.includes("watch")) verdictClass = "verdict-watch";
+
 
 
   const otherLines = full_report

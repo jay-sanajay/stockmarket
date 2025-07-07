@@ -256,5 +256,23 @@
     "date": "2025-07-06",
     "price": 998.6,
     "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udfe1 Hold** \u2014 Mixed signals. Hold and monitor for clearer direction."
+  },
+  {
+    "symbol": "IREDA.NS",
+    "date": "2025-07-07",
+    "price": 166.75,
+    "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udcc8 Short-Term Buy** \u2014 Technical bounce expected (e.g., oversold RSI)"
+  },
+  {
+    "symbol": "IRFC.NS",
+    "date": "2025-07-07",
+    "price": 139.1,
+    "verdict": "\ud83d\udccc Final Verdict: **\u26d4 Avoid** \u2014 Bad metrics or high risk (debt, downtrend, overbought, etc.)"
+  },
+  {
+    "symbol": "INFY.NS",
+    "date": "2025-07-07",
+    "price": 1633.2,
+    "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udfe1 Hold** \u2014 Mixed signals. Hold and monitor for clearer direction."
   }
 ]
