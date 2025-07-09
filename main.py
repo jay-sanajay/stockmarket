@@ -15,7 +15,7 @@ import requests
 load_dotenv()
 today = datetime.now().strftime("%B %d, %Y")
 
-GEMINI_API_KEY = "AIzaSyB8BFan5O1HH2atadPdJAr0LoC1y2oMdmg"
+GEMINI_API_KEY = "AIzaSyB9VNMFfpB_95-6ZMh_UW8FoSYMjQCNSUQ"
 NEWSDATA_API_KEY = "pub_48e1a7203f9c402ab31981ca24cfc2c6"
 
 # Gemini Setup
@@ -31,6 +31,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/")
+def home():
+    return {"status": "ok", "message": "Stock Analyzer API is live 🚀"}
+
 @app.get("/yahoo_search")
 def yahoo_search(q: str):
     try:
