@@ -214,6 +214,7 @@ def analyze(stock: str = Query(...)):
         hist = compute_technicals(hist)
         chart = generate_chart_base64(hist)
 
+        # Fundamental metrics
         pe = info.get("trailingPE") if info.get("trailingPE", 0) > 0 else None
         pb = info.get("priceToBook")
         eps = info.get("trailingEps")
@@ -221,7 +222,22 @@ def analyze(stock: str = Query(...)):
         roe = info.get("returnOnEquity", 0) * 100 if info.get("returnOnEquity") else None
         roa = info.get("returnOnAssets", 0) * 100 if info.get("returnOnAssets") else None
         roce = info.get("returnOnCapitalEmployed", 0) * 100 if info.get("returnOnCapitalEmployed") else None
-        de_ratio = info.get("debtToEquity")
+
+        # ✅ Safe D/E ratio parsing
+        def parse_de_ratio(val):
+            try:
+                ratio = float(val)
+                return round(ratio / 100, 2) if ratio > 10 else round(ratio, 2)
+            except:
+                return None
+
+        de_ratio = parse_de_ratio(info.get("debtToEquity"))
+
+        raw_div = info.get("dividendYield", 0)
+        div_yield = raw_div * 100 if raw_div and raw_div < 1 else 0
+
+        
+
 
         raw_div = info.get("dividendYield", 0)
         div_yield = raw_div * 100 if raw_div and raw_div < 1 else 0
