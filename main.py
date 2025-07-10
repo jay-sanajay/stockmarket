@@ -35,18 +35,7 @@ app.add_middleware(
 def home():
     return {"status": "ok", "message": "Stock Analyzer API is live 🚀"}
 
-@app.get("/yahoo_search")
-def yahoo_search(q: str):
-    try:
-        url = f"https://query1.finance.yahoo.com/v1/finance/search?q={q}&lang=en&region=IN"
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
-        res = requests.get(url, headers=headers)
-        res.raise_for_status()
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
+
 # ==== Chart and Technicals ====
 def generate_chart_base64(hist):
     plt.figure(figsize=(10, 4))
