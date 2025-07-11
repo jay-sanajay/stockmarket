@@ -28,7 +28,7 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For testing; replace with your domain in production
+    allow_origins=["https://stockmarket-rho.vercel.app"],  # For testing; replace with your domain in production
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
