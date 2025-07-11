@@ -11,6 +11,8 @@ import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
+import time
+from functools import lru_cache
 
 load_dotenv()
 today = datetime.now().strftime("%B %d, %Y")
@@ -26,11 +28,15 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://stockmarket-rho.vercel.app"],
+    allow_origins=["*"],  # For testing; replace with your domain in production
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+stock_cache = {}
+CACHE_DURATION = 300  # 5 minutes
+
 @app.get("/")
 def home():
     return {"status": "ok", "message": "Stock Analyzer API is live 🚀"}
@@ -192,6 +198,11 @@ def log_verdict(symbol, price, verdict):
 # ==== Main Endpoint ====
 @app.get("/analyze")
 def analyze(stock: str = Query(...)):
+      # ✅ If cached result is valid, return it directly
+    now = time.time() 
+    if stock in stock_cache and (now - stock_cache[stock]["timestamp"]) < CACHE_DURATION:
+        return stock_cache[stock]["data"]
+
     try:
         ticker = yf.Ticker(stock.upper())
         info = ticker.info
@@ -410,7 +421,7 @@ Strict FORMAT:
 
         log_verdict(stock.upper(), price, verdict)
 
-        return {
+        result= {
             "company": info.get("longName"),
             "symbol": stock.upper(),
             "ratios": {
@@ -441,6 +452,11 @@ Strict FORMAT:
             "stop_loss_zone": stop_loss_zone,
             "target_zones": target_zones
         }
+        stock_cache[stock]={
+            "timestamp":time.time(),
+            "data":result
+        }
+        return result
 
     except Exception as e:
         return {"error": str(e)}

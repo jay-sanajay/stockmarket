@@ -9,23 +9,30 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
+    try {
+      return await axios.get(url);
+    } catch (err) {
+      if (retries === 0) throw err;
+      await new Promise((r) => setTimeout(r, delay));
+      return fetchWithRetry(url, retries - 1, delay * 2);
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!stock.trim()) return;
     setLoading(true);
     setError("");
     setData(null);
     try {
-      // Replace with your deployed URL in production
-     
-
-     const res = await axios.get(`https://stockmarket-rz6w.onrender.com/analyze?stock=${stock}`);
+      const res = await fetchWithRetry(`https://stockmarket-rz6w.onrender.com/analyze?stock=${stock}`);
       if (res.data.error) {
         setError(res.data.error);
       } else {
         setData(res.data);
       }
     } catch (err) {
-      setError("❌ Failed to fetch data. Please check your internet or backend.");
+      setError("❌ Too many requests or backend unavailable. Please try again later.");
     }
     setLoading(false);
   };
@@ -36,23 +43,18 @@ function App() {
       <p className="subtitle">SEBI-Style Reports | AI-Powered Insights</p>
 
       <div className="search-bar">
-  <input
-    type="text"
-    placeholder="Enter stock symbol (e.g., TCS.NS)"
-    value={stock}
-    onChange={(e) => setStock(e.target.value)}
-    style={{ width: "300px", padding: "8px", marginRight: "10px" }}
-  />
-  <button onClick={handleAnalyze}>Analyze</button>
-</div>
-
-
+        <input
+          type="text"
+          placeholder="Enter stock symbol (e.g., TCS.NS)"
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          style={{ width: "300px", padding: "8px", marginRight: "10px" }}
+        />
+        <button onClick={handleAnalyze}>Analyze</button>
+      </div>
 
       {loading && <p className="loading">⏳ Analyzing stock...</p>}
       {error && <p className="error">{error}</p>}
-
-      {/* ✅ Final Verdict REMOVED */}
-      
       {data && <StockDashboard data={data} />}
     </div>
   );
