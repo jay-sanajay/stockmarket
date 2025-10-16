@@ -22,7 +22,7 @@ NEWSDATA_API_KEY = "pub_48e1a7203f9c402ab31981ca24cfc2c6"
 
 # Gemini Setup
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
 # FastAPI app init
 app = FastAPI()
