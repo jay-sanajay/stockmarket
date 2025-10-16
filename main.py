@@ -17,22 +17,28 @@ from functools import lru_cache
 load_dotenv()
 today = datetime.now().strftime("%B %d, %Y")
 
-GEMINI_API_KEY = "AIzaSyB9VNMFfpB_95-6ZMh_UW8FoSYMjQCNSUQ"
+GEMINI_API_KEY = "AIzaSyABMAwHuZ0GPAGHDgZH0hZ59eKOXNAt5kc"
 NEWSDATA_API_KEY = "pub_48e1a7203f9c402ab31981ca24cfc2c6"
 
 # Gemini Setup
+# Gemini Setup
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = genai.GenerativeModel("gemini-1.5-flash")  # ✅ fixed
 
 # FastAPI app init
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://stockmarket-rho.vercel.app"],  # For testing; replace with your domain in production
+    allow_origins=[
+        "http://localhost:3000", 
+        "https://stockmarket-rho.vercel.app",
+        "https://*.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 stock_cache = {}
 CACHE_DURATION = 300  # 5 minutes

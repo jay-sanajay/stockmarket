@@ -334,5 +334,17 @@
     "date": "2025-07-11",
     "price": 160.0,
     "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udcc8 Short-Term Buy** \u2014 Technical bounce expected (e.g., oversold RSI)"
+  },
+  {
+    "symbol": "ITC.NS",
+    "date": "2025-07-11",
+    "price": 416.8,
+    "verdict": "\ud83d\udccc Final Verdict: **\u26d4 Avoid** \u2014 Bad metrics or high risk (debt, downtrend, overbought, etc.)"
+  },
+  {
+    "symbol": "NATCOPHARM.NS",
+    "date": "2025-07-11",
+    "price": 961.8,
+    "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udcca Long-Term Buy** \u2014 Strong fundamentals, but downtrend or neutral macro"
   }
 ]
