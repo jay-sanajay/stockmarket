@@ -15,6 +15,12 @@ def get_gemini_api_key() -> str | None:
     return key or None
 
 
+def get_gemini_model_preference() -> str | None:
+    """Optional override, e.g. gemini-2.0-flash — see Google AI Studio model list."""
+    m = os.getenv("GEMINI_MODEL", "").strip()
+    return m or None
+
+
 def get_newsdata_api_key() -> str | None:
     key = os.getenv("NEWSDATA_API_KEY", "").strip()
     return key or None

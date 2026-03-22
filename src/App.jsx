@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import StockDashboard from "./StockDashboard";
 import LoadingSkeleton from "./LoadingSkeleton";
+import { getApiBase } from "./api.js";
 import "./App.css";
 
 const QUICK_TICKERS = [
@@ -13,17 +14,28 @@ const QUICK_TICKERS = [
   "ITC.NS",
 ];
 
-function App() {
+function formatNetworkHelp() {
+  return (
+    <>
+      Cannot reach the API. In the project folder, start the backend in a <strong>second</strong>{" "}
+      terminal:
+      <br />
+      <code className="inline-code">
+        python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+      </code>
+      <br />
+      Or run both at once: <code className="inline-code">npm run dev:all</code>
+    </>
+  );
+}
+
+export default function App() {
   const [stock, setStock] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
-  const apiBase =
-    import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
-    (import.meta.env.DEV
-      ? "http://127.0.0.1:8000"
-      : "https://stockmarket-rz6w.onrender.com");
+  const apiBase = getApiBase();
 
   const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
     try {
@@ -39,28 +51,40 @@ function App() {
     const s = symbol.trim();
     if (!s) return;
     setLoading(true);
-    setError("");
+    setError(null);
     setData(null);
     try {
-      const res = await fetchWithRetry(
-        `${apiBase}/analyze?stock=${encodeURIComponent(s)}`
-      );
+      const path = `/analyze?stock=${encodeURIComponent(s)}`;
+      const url = apiBase ? `${apiBase}${path}` : path;
+      const res = await fetchWithRetry(url);
       if (res.data?.error) {
         setError(res.data.error);
       } else {
         setData(res.data);
       }
     } catch (err) {
-      const body = err.response?.data;
-      let detail = body?.detail ?? body?.error ?? err.message;
-      if (Array.isArray(detail)) {
-        detail = detail.map((x) => x?.msg || JSON.stringify(x)).join("; ");
+      const noResponse = err.response == null;
+      const msg = String(err.message || "");
+      const networkFail =
+        noResponse &&
+        (msg === "Network Error" ||
+          err.code === "ERR_NETWORK" ||
+          msg.includes("Network"));
+
+      if (networkFail) {
+        setError({ type: "network", jsx: formatNetworkHelp() });
+      } else {
+        const body = err.response?.data;
+        let detail = body?.detail ?? body?.error ?? err.message;
+        if (Array.isArray(detail)) {
+          detail = detail.map((x) => x?.msg || JSON.stringify(x)).join("; ");
+        }
+        setError(
+          typeof detail === "string" && detail
+            ? `❌ ${detail}`
+            : "❌ Request failed. Check that the API is running on port 8000."
+        );
       }
-      setError(
-        typeof detail === "string" && detail
-          ? `❌ ${detail}`
-          : "❌ Too many requests or backend unavailable. Please try again later."
-      );
     }
     setLoading(false);
   }
@@ -123,12 +147,24 @@ function App() {
           </div>
         </div>
         {import.meta.env.DEV && (
-          <p className="hint">Press Enter to run · API {apiBase}</p>
+          <p className="hint">
+            {apiBase
+              ? `Direct API: ${apiBase}`
+              : "Dev: Vite proxies /analyze → http://127.0.0.1:8000 (start uvicorn first)"}
+          </p>
         )}
       </section>
 
       {loading && <LoadingSkeleton />}
-      {!loading && error && <p className="error">{error}</p>}
+      {!loading && error != null && (
+        <div className="error error-box">
+          {typeof error === "object" && error.jsx ? (
+            error.jsx
+          ) : (
+            <span>{error}</span>
+          )}
+        </div>
+      )}
       {!loading && data && <StockDashboard data={data} />}
 
       <footer className="app-footer">
@@ -140,5 +176,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

@@ -17,6 +17,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# App runtime
+verdict_log.json
+
 # Python
 __pycache__/
 *.py[cod]
