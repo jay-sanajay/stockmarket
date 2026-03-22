@@ -9,6 +9,7 @@ import random
 import time
 from datetime import datetime
 
+import pandas as pd
 import yfinance as yf
 
 from config import get_analysis_cache_ttl_seconds, is_render_deployment
@@ -78,14 +79,61 @@ _YF_RETRIES = 5 if is_render_deployment() else 3
 _YF_DELAYS = (0.0, 5.0, 14.0, 28.0, 50.0) if is_render_deployment() else (0.0, 4.0, 10.0)
 
 
+def _normalize_yf_download_df(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
+    """Single-ticker download may use MultiIndex columns — flatten to Open/High/Low/Close/Volume."""
+    if df is None or df.empty:
+        raise ValueError("empty Yahoo download")
+    out = df.copy()
+    if isinstance(out.columns, pd.MultiIndex):
+        tickers = out.columns.get_level_values(-1).unique().tolist()
+        if symbol in tickers:
+            out = out.xs(symbol, axis=1, level=-1)
+        elif len(tickers) == 1:
+            out = out.xs(tickers[0], axis=1, level=-1)
+        else:
+            out = out.droplevel(1, axis=1)
+    if "Close" not in out.columns:
+        raise ValueError("Yahoo download missing Close column")
+    if "Volume" not in out.columns:
+        out["Volume"] = 0.0
+    return out
+
+
+def _download_to_info_hist(symbol: str, period: str) -> tuple[dict, pd.DataFrame]:
+    """
+    Alternate Yahoo path (yf.download) — different endpoints than Ticker.info/history;
+    often still works when the Ticker path is rate-limited on shared hosting.
+    Fundamentals in info are minimal (price only); ratios may be missing.
+    """
+    if is_render_deployment():
+        time.sleep(random.uniform(0.1, 0.45))
+    raw = yf.download(
+        symbol,
+        period=period,
+        progress=False,
+        threads=False,
+        auto_adjust=True,
+    )
+    hist = _normalize_yf_download_df(raw, symbol)
+    last_close = float(hist["Close"].iloc[-1])
+    info = {
+        "longName": symbol,
+        "shortName": symbol,
+        "currentPrice": last_close,
+        "regularMarketPrice": last_close,
+        "regularMarketPreviousClose": last_close,
+        "previousClose": last_close,
+    }
+    return info, hist
+
+
 def _fetch_yfinance(symbol: str, timeout: float | None = None):
-    """Run yfinance I/O in a thread with timeout; retries on Yahoo rate limits."""
+    """Ticker first (full fundamentals); then yf.download fallback (OHLCV-only) on failure."""
     if timeout is None:
         timeout = 75.0 if is_render_deployment() else 45.0
 
-    def _work():
-        # Do not pass requests.Session — recent yfinance uses curl_cffi internally; custom sessions break.
-        # Jitter + stagger on Render: space out Yahoo calls a little.
+    def _work_ticker():
+        # Do not pass requests.Session — yfinance expects curl_cffi internally.
         if is_render_deployment():
             time.sleep(random.uniform(0.2, 0.8))
         ticker = yf.Ticker(symbol)
@@ -102,23 +150,39 @@ def _fetch_yfinance(symbol: str, timeout: float | None = None):
         if attempt > 0:
             time.sleep(_YF_DELAYS[attempt])
             logger.warning(
-                "yfinance retry %s/%s for %s after transient error",
+                "yfinance Ticker retry %s/%s for %s",
                 attempt + 1,
                 _YF_RETRIES,
                 symbol,
             )
         try:
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                fut = pool.submit(_work)
+                fut = pool.submit(_work_ticker)
                 return fut.result(timeout=timeout)
         except Exception as e:
             last_err = e
             if _is_yf_transient(e) and attempt < _YF_RETRIES - 1:
                 continue
-            raise
+            break
+
+    logger.warning(
+        "yfinance Ticker failed for %s — trying download fallback (last: %s)",
+        symbol,
+        last_err,
+    )
+    for period in ("2y", "1y", "6mo"):
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                fut = pool.submit(_download_to_info_hist, symbol, period)
+                return fut.result(timeout=timeout)
+        except Exception as e:
+            last_err = e
+            logger.warning("download fallback period=%s failed: %s", period, e)
+            time.sleep(1.5)
+
     if last_err:
         raise last_err
-    raise RuntimeError("yfinance: unexpected retry loop exit")
+    raise RuntimeError("yfinance: no data")
 
 
 def _safe_pe(info: dict):
