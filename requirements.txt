@@ -1,5 +1,5 @@
-# Prefer the project root requirements.txt for the FastAPI backend.
-# This file is kept for discoverability; sync with ../requirements.txt when updating.
+# FastAPI backend (Render / Railway / Linux containers).
+# Python 3.10+ recommended.
 
 fastapi>=0.109.0,<1.0.0
 uvicorn[standard]>=0.27.0,<1.0.0

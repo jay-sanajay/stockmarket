@@ -1,0 +1,66 @@
+.skeleton-root {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.skeleton-hero {
+  margin-bottom: 2rem;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.sk {
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 50%,
+    #1e293b 100%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.2s ease-in-out infinite;
+}
+
+.sk-title {
+  height: 36px;
+  max-width: 320px;
+  margin: 0 auto 1rem;
+}
+
+.sk-line {
+  height: 14px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.sk-line.short {
+  max-width: 200px;
+}
+
+.sk-card {
+  height: 88px;
+}
+
+.sk-chart {
+  height: 280px;
+  margin-bottom: 2rem;
+}
+
+.sk-block {
+  height: 120px;
+}
+
+@keyframes sk-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
