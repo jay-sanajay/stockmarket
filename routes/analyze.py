@@ -15,15 +15,53 @@ logger = logging.getLogger(__name__)
 _SYMBOL_PATTERN = re.compile(r"^[A-Za-z0-9.\-^]+$")
 
 
+def _exception_chain_text(exc: BaseException, max_depth: int = 8) -> str:
+    """Google / yfinance errors are often nested; str(top) may omit the rate-limit phrase."""
+    parts: list[str] = []
+    cur: BaseException | None = exc
+    depth = 0
+    while cur is not None and depth < max_depth:
+        parts.append(str(cur))
+        parts.extend(str(a) for a in getattr(cur, "args", ()) or ())
+        for attr in ("message", "details"):
+            if hasattr(cur, attr):
+                parts.append(str(getattr(cur, attr, "")))
+        resp = getattr(cur, "response", None)
+        if resp is not None:
+            parts.append(str(getattr(resp, "text", "") or ""))
+            parts.append(str(getattr(resp, "reason", "") or ""))
+        cur = cur.__cause__ or cur.__context__
+        depth += 1
+    return " ".join(parts).lower()
+
+
 def _looks_like_upstream_rate_limit(exc: BaseException) -> bool:
-    s = str(exc).lower()
-    if "429" in str(exc):
+    try:
+        from google.api_core.exceptions import ResourceExhausted
+
+        if isinstance(exc, ResourceExhausted):
+            return True
+    except ImportError:
+        pass
+
+    s = _exception_chain_text(exc)
+    if "429" in s:
         return True
     if "too many" in s or "resource exhausted" in s:
         return True
     if "rate" in s and ("limit" in s or "limited" in s):
         return True
+    if "try after" in s and "while" in s:
+        return True
+    if "quota" in s and ("exceed" in s or "exhaust" in s):
+        return True
     return False
+
+
+_RATE_LIMIT_USER_MSG = (
+    "Data providers are busy (Yahoo Finance, Google AI, or news). "
+    "Wait 2–3 minutes and try again — free tiers rate-limit shared IPs like Render."
+)
 
 
 def _validate_symbol(raw: str) -> str:
@@ -88,13 +126,8 @@ def analyze(
     except Exception as e:
         logger.exception("analyze: unexpected failure for %s: %s", symbol, e)
         if _looks_like_upstream_rate_limit(e):
-            raise HTTPException(
-                status_code=429,
-                detail=(
-                    "Upstream rate limit (Yahoo Finance, Google AI, or news). "
-                    "Wait 1–2 minutes and try again."
-                ),
-            ) from e
+            # HTTP 200 + {error} so axios succeeds and the SPA shows one clear banner (no console 500)
+            return {"error": _RATE_LIMIT_USER_MSG}
         raise HTTPException(
             status_code=500,
             detail=f"Analysis failed: {e!s}",
