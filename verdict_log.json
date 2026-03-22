@@ -364,5 +364,11 @@
     "date": "2026-03-22",
     "price": 3165.9,
     "verdict": "\ud83d\udccc Final Verdict: **\u26d4 Avoid** \u2014 Bad metrics or high risk (debt, downtrend, overbought, etc.)"
+  },
+  {
+    "symbol": "INFY.NS",
+    "date": "2026-03-22",
+    "price": 1255.9,
+    "verdict": "\ud83d\udccc Final Verdict: **\ud83d\udcca Long-Term Buy** \u2014 Strong fundamentals, but downtrend or neutral macro"
   }
 ]
