@@ -50,7 +50,7 @@ This repo is a **monorepo**: React (Vite) at the root **and** FastAPI (`main.py`
   |----------|----------|
   | `GEMINI_API_KEY` | Yes |
   | `NEWSDATA_API_KEY` | Yes |
-  | `CORS_ORIGINS` | Yes — include **`https://stockmarket-rho.vercel.app`**. **Preview** URLs (`stockmarket-…vercel.app`) are allowed automatically when `RENDER=true` (see `get_cors_origin_regex` in `config.py`). |
+  | `CORS_ORIGINS` | Yes — include your **production** Vercel URL (e.g. `https://stockmarket-rho.vercel.app`). **Preview** deploys (`*.vercel.app`) are allowed automatically when `RENDER=true` via regex in `config.py` (any subdomain, not only `stockmarket-*`). |
   | `ENVIRONMENT` | Optional — `production` |
   | `PERPLEXITY_API_KEY` | Optional |
   | `ANALYSIS_CACHE_TTL` | Optional — seconds for in-memory `/analyze` cache (Render defaults to **1 hour** when unset). |
@@ -58,9 +58,17 @@ This repo is a **monorepo**: React (Vite) at the root **and** FastAPI (`main.py`
 
 - After deploy, copy the public API URL, e.g. `https://xxxxx.onrender.com`.
 
-### “Works on localhost, fails on Vercel” (rate limits)
+### Local works, deployed does not — two different causes
 
-Free tiers for **Yahoo Finance**, **Gemini**, and **NewsData** often throttle **shared outbound IPs** (Render, etc.). Your app may show the friendly “wait 2–3 minutes” message. Mitigations: enable **`SKIP_GEMINI_SENTIMENT=1`** on Render, rely on the longer default cache on Render, wait between tests, or use paid / higher quotas.
+| What you see | Likely cause | What to do |
+|--------------|--------------|------------|
+| Browser **Network** shows request to `127.0.0.1` or fails instantly; or console **CORS** errors | **Frontend** still using wrong API URL, or **Render** blocking your Vercel origin | Set **`VITE_API_BASE_URL`** = `https://<your-service>.onrender.com` on Vercel → **Redeploy**. On Render, **`CORS_ORIGINS`** must include your **production** Vercel URL. Redeploy API after env changes. |
+| Request reaches Render (`…onrender.com/analyze`) with **200** but red banner: “Data providers are busy…” | **Yahoo / Gemini / News** rate-limiting Render’s **shared IP** (normal on free tier) | Wait 2–3 minutes, retry; use **`SKIP_GEMINI_SENTIMENT`** defaults on Render; avoid hammering Analyze; upgrade quotas if needed. |
+| **502 / 503** or long wait then response | **Cold start** (free tier sleeps when idle) | First click after idle can take **30–60s**; retry once. |
+
+### “Works on localhost, fails on Vercel” (rate limits only)
+
+Free tiers for **Yahoo Finance**, **Gemini**, and **NewsData** often throttle **shared outbound IPs** (Render, etc.). Your app may show the friendly “wait 2–3 minutes” message. Mitigations: keyword sentiment default on Render, longer cache, wait between tests, or paid / higher quotas.
 
 ## 2. Frontend (Vercel)
 

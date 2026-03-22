@@ -39,9 +39,10 @@ function formatNetworkHelpProduction() {
       <code className="inline-code">127.0.0.1</code>. Redeploy after saving.
       <br />
       <br />
-      Also confirm your <strong>Render</strong> service is running and{" "}
-      <code className="inline-code">CORS_ORIGINS</code> includes{" "}
-      <code className="inline-code">https://stockmarket-rho.vercel.app</code>.
+      Also confirm your <strong>Render</strong> service is running,{" "}
+      <code className="inline-code">CORS_ORIGINS</code> includes your{" "}
+      <strong>production</strong> Vercel URL, and the API URL matches this site (check
+      browser Network tab for <code className="inline-code">…onrender.com</code>).
     </>
   );
 }

@@ -64,8 +64,8 @@ def get_cors_origin_regex() -> str | None:
         "false",
         "no",
     ):
-        # One regex covers production + every Vercel preview deployment URL
-        return r"^https://stockmarket[\w-]+\.vercel\.app$"
+        # Any *.vercel.app (preview + prod) — not only names starting with "stockmarket"
+        return r"^https://[\w-]+\.vercel\.app$"
 
     if is_production():
         return None
