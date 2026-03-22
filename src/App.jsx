@@ -14,17 +14,34 @@ const QUICK_TICKERS = [
   "ITC.NS",
 ];
 
-function formatNetworkHelp() {
+function formatNetworkHelpLocal() {
   return (
     <>
-      Cannot reach the API. In the project folder, start the backend in a <strong>second</strong>{" "}
-      terminal:
+      Cannot reach the API. Start the backend in a <strong>second</strong> terminal:
       <br />
       <code className="inline-code">
         python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
       </code>
       <br />
-      Or run both at once: <code className="inline-code">npm run dev:all</code>
+      Or run both: <code className="inline-code">npm run dev:all</code>
+    </>
+  );
+}
+
+function formatNetworkHelpProduction() {
+  return (
+    <>
+      Cannot reach the API from this site. On <strong>Vercel</strong>, open{" "}
+      <strong>Settings → Environment Variables</strong> and set{" "}
+      <code className="inline-code">VITE_API_BASE_URL</code> to your{" "}
+      <strong>public Render URL</strong> (e.g. <code className="inline-code">https://xxx.onrender.com</code>
+      ) — <strong>not</strong> <code className="inline-code">127.0.0.1</code>. Redeploy after saving.
+      <br />
+      <br />
+      Also confirm your <strong>Render</strong> service is running and <code className="inline-code">
+        CORS_ORIGINS
+      </code>{" "}
+      includes <code className="inline-code">https://stockmarket-rho.vercel.app</code>.
     </>
   );
 }
@@ -72,7 +89,12 @@ export default function App() {
           msg.includes("Network"));
 
       if (networkFail) {
-        setError({ type: "network", jsx: formatNetworkHelp() });
+        setError({
+          type: "network",
+          jsx: import.meta.env.DEV
+            ? formatNetworkHelpLocal()
+            : formatNetworkHelpProduction(),
+        });
       } else {
         const body = err.response?.data;
         let detail = body?.detail ?? body?.error ?? err.message;
