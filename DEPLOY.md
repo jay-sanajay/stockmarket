@@ -13,6 +13,17 @@ Prerequisites: [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/) installed
 
 From the **repo root** (where `main.py`, `Dockerfile`, and `fly.toml` live):
 
+### Windows: mostly automated
+
+1. Install Fly CLI (if needed): `powershell -Command "iwr https://fly.io/install.ps1 -useb | iex"` — restart the terminal, or use `%USERPROFILE%\.fly\bin\flyctl.exe`.
+2. Log in once (opens browser): `flyctl auth login`
+3. Ensure **root `.env`** has `GEMINI_API_KEY`, `NEWSDATA_API_KEY`, and **`CORS_ORIGINS`** including your Vercel URL (e.g. `https://stockmarket-rho.vercel.app`).
+4. Run **`npm run fly:deploy`** — imports those keys into Fly secrets and runs **`fly deploy`**.
+
+To push secrets only: **`npm run fly:secrets`**.
+
+### Manual path
+
 1. **First deploy**
    - Edit `fly.toml` → set `app = "your-unique-name"` (or run `fly launch` and let it generate/update `fly.toml`).
    - Deploy: `fly deploy`
