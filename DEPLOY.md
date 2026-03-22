@@ -9,6 +9,38 @@ This repo is a **monorepo**: React (Vite) at the root **and** FastAPI (`main.py`
 
 ## 1. Backend (Render / Railway / similar)
 
+### First deploy (new Render account)
+
+1. Push this repo to **GitHub** (if it is not already).
+2. In [Render Dashboard](https://dashboard.render.com) → **New +** → **Web Service**.
+3. **Connect** your `stockmarket` (or fork) repository and choose branch **`main`**.
+4. Configure:
+   - **Name:** anything (e.g. `jayquant-api`) — this becomes `https://<name>.onrender.com`.
+   - **Region:** pick one close to you.
+   - **Root directory:** leave **empty** (repo root — where `main.py` lives).
+   - **Runtime:** **Python 3**.
+   - **Build command:** `pip install -r requirements.txt`
+   - **Start command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`  
+     (same as `Procfile`; Render sets `PORT` and **`RENDER=true`** automatically.)
+5. Under **Environment**, add:
+
+   | Key | Value |
+   |-----|--------|
+   | `GEMINI_API_KEY` | from [Google AI Studio](https://aistudio.google.com/apikey) |
+   | `NEWSDATA_API_KEY` | from [newsdata.io](https://newsdata.io/) |
+   | `CORS_ORIGINS` | `https://stockmarket-rho.vercel.app` (comma-separate if you add more origins) |
+   | `ENVIRONMENT` | `production` (optional) |
+
+   Optional: `SKIP_GEMINI_SENTIMENT` = `1`, `ANALYSIS_CACHE_TTL` = `3600` (see table below).
+
+6. Choose **Free** plan if you want, then **Create Web Service**. Wait for the first deploy (several minutes). Cold starts on free tier can take ~30–60s after idle.
+7. Open **`https://<your-service-name>.onrender.com/health`** — you should see `{"status":"ok",...}`.
+8. Point the **Vercel** frontend at this URL: **`VITE_API_BASE_URL`** = `https://<your-service-name>.onrender.com` (no trailing slash), then **redeploy** Vercel. Optionally update **`PRODUCTION_API_FALLBACK`** in `src/api.js` to the same URL if you rely on the fallback.
+
+**Blueprint (optional):** If you prefer infra-as-code, use **New + → Blueprint** with this repo; `render.yaml` defines the same web service. You will still need to set secret env vars in the dashboard after the service is created.
+
+---
+
 - **Root directory:** repo root (where `main.py` and `requirements.txt` live).
 - **Build:** `pip install -r requirements.txt` (or leave empty if the platform auto-detects Python).
 - **Start:** `uvicorn main:app --host 0.0.0.0 --port $PORT` (Render/Railway set `PORT`; `Procfile` matches this).
