@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+dist
+__pycache__
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+venv
+.venv
+*.md
+!README.md
+.cursor
+terminals
+verdict_log.json

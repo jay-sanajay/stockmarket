@@ -1,11 +1,9 @@
 """Health and root endpoints."""
 
-import os
-
 from fastapi import APIRouter
 from starlette.responses import Response
 
-from config import is_production
+from config import is_deployed_backend, is_production
 from schemas import HealthResponse
 
 router = APIRouter(tags=["health"])
@@ -13,7 +11,7 @@ router = APIRouter(tags=["health"])
 
 @router.head("/")
 def home_head():
-    """Render and some proxies use HEAD on / for health checks — avoid 405."""
+    """Fly.io, Render, and some proxies use HEAD on / for health checks — avoid 405."""
     return Response(status_code=200)
 
 
@@ -24,11 +22,9 @@ def health_head():
 
 @router.get("/", response_model=dict)
 def home():
-    # Render sets RENDER=true; also treat explicit production env
-    on_render = os.getenv("RENDER", "").lower() in ("true", "1")
     note = (
         "Vercel: set VITE_API_BASE_URL to this origin (no trailing slash). Paths: /docs, /health, /analyze."
-        if (on_render or is_production())
+        if (is_deployed_backend() or is_production())
         else "Local dev: http://127.0.0.1:8000 (not 0.0.0.0)."
     )
     return {

@@ -45,10 +45,20 @@ def get_cors_origins() -> list[str]:
     return [o.strip() for o in raw.split(",") if o.strip()]
 
 
+def is_deployed_backend() -> bool:
+    """
+    True on Fly.io, Render, etc. — enables longer default analyze cache and Vercel preview CORS regex.
+    Fly sets FLY_APP_NAME automatically; Render sets RENDER=true.
+    """
+    if os.getenv("RENDER", "").lower() in ("true", "1"):
+        return True
+    return bool(os.getenv("FLY_APP_NAME", "").strip())
+
+
 def get_cors_origin_regex() -> str | None:
     """
     Extra origins beyond allow_origins (OR logic in Starlette).
-    - Render: allow all JayQuant Vercel hosts (production + preview), e.g.
+    - Fly.io / Render: allow all JayQuant Vercel hosts (production + preview), e.g.
       stockmarket-rho.vercel.app and stockmarket-xxx-jays-projects-xxx.vercel.app
     - Local dev: any port on localhost / 127.0.0.1 when CORS_ORIGINS is unset.
     Override with CORS_ORIGIN_REGEX (use \"none\" to disable).
@@ -59,8 +69,7 @@ def get_cors_origin_regex() -> str | None:
     if custom:
         return custom
 
-    on_render = os.getenv("RENDER", "").lower() in ("true", "1")
-    if on_render and os.getenv("CORS_VERCEL_REGEX", "1").lower() not in (
+    if is_deployed_backend() and os.getenv("CORS_VERCEL_REGEX", "1").lower() not in (
         "0",
         "false",
         "no",
@@ -99,6 +108,6 @@ def skip_gemini_for_sentiment() -> bool:
     """
     If true, use keyword heuristic on headlines instead of a Gemini call — halves Gemini usage
     per /analyze (helps free-tier quotas on shared hosting IPs).
-    Set SKIP_GEMINI_SENTIMENT=1 on Render if you hit rate limits often.
+    Set SKIP_GEMINI_SENTIMENT=1 on Fly.io / Render if you hit rate limits often.
     """
     return os.getenv("SKIP_GEMINI_SENTIMENT", "").lower() in ("1", "true", "yes")

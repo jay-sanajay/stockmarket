@@ -18,7 +18,7 @@ _SYMBOL_PATTERN = re.compile(r"^[A-Za-z0-9.\-^]+$")
 
 _RATE_LIMIT_USER_MSG = (
     "Data providers are busy (Yahoo Finance, Google AI, or news). "
-    "Wait 2–3 minutes and try again — free tiers rate-limit shared IPs like Render."
+    "Wait 2–3 minutes and try again — free tiers rate-limit shared IPs (Fly.io, Render, etc.)."
 )
 
 
