@@ -1,10 +1,10 @@
 /**
  * API base URL.
  * - Local dev: empty string → Vite proxies /analyze → http://127.0.0.1:8000 (vite.config.js).
- * - Production (Vercel): set VITE_API_BASE_URL to your **public** API URL (Fly.io `.fly.dev`, etc.) — never localhost.
- * - Fallback: used when env is missing or invalid for production builds (must match your Fly app name or override via env).
+ * - Production (Vercel): set VITE_API_BASE_URL to your **public** Render API URL (never localhost).
+ * - Fallback: used when env is missing or invalid for production builds.
  */
-const PRODUCTION_API_FALLBACK = "https://jayquant-api.fly.dev";
+const PRODUCTION_API_FALLBACK = "https://stockmarket-rz6w.onrender.com";
 
 function isLocalhostUrl(url) {
   if (!url || typeof url !== "string") return false;

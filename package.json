@@ -9,9 +9,7 @@
     "dev:all": "concurrently -n web,api -c cyan,magenta \"npm run dev\" \"npm run dev:api\"",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "fly:secrets": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/fly-push-secrets.ps1",
-    "fly:deploy": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/fly-deploy-api.ps1"
+    "preview": "vite preview"
   },
   "dependencies": {
     "axios": "^1.10.0",

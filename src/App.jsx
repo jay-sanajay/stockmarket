@@ -34,12 +34,12 @@ function formatNetworkHelpProduction() {
       Cannot reach the API from this site. On <strong>Vercel</strong>, open{" "}
       <strong>Settings → Environment Variables</strong> and set{" "}
       <code className="inline-code">VITE_API_BASE_URL</code> to your{" "}
-      <strong>public API URL</strong> (e.g.{" "}
-      <code className="inline-code">https://your-app.fly.dev</code>) — <strong>not</strong>{" "}
+      <strong>public Render URL</strong> (e.g.{" "}
+      <code className="inline-code">https://xxx.onrender.com</code>) — <strong>not</strong>{" "}
       <code className="inline-code">127.0.0.1</code>. Redeploy after saving.
       <br />
       <br />
-      Also confirm your <strong>Fly.io</strong> (or other) API is running and{" "}
+      Also confirm your <strong>Render</strong> service is running and{" "}
       <code className="inline-code">CORS_ORIGINS</code> includes{" "}
       <code className="inline-code">https://stockmarket-rho.vercel.app</code>.
     </>
