@@ -9,7 +9,6 @@ import random
 import time
 from datetime import datetime
 
-import requests
 import yfinance as yf
 
 from config import get_analysis_cache_ttl_seconds, is_render_deployment
@@ -58,25 +57,6 @@ def log_verdict(symbol: str, price: float | None, verdict: str) -> None:
         logger.exception("log_verdict failed: %s", e)
 
 
-_YAHOO_UA = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-)
-
-
-def _yahoo_session() -> requests.Session:
-    """Browser-like session — Yahoo often throttles datacenter IPs harder without a User-Agent."""
-    s = requests.Session()
-    s.headers.update(
-        {
-            "User-Agent": _YAHOO_UA,
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
-    )
-    return s
-
-
 def _is_yf_transient(exc: BaseException) -> bool:
     s = str(exc).lower()
     return (
@@ -104,11 +84,11 @@ def _fetch_yfinance(symbol: str, timeout: float | None = None):
         timeout = 75.0 if is_render_deployment() else 45.0
 
     def _work():
-        # Jitter + stagger: shared hosting IPs (Render) sometimes hit burst limits on back-to-back Yahoo calls.
+        # Do not pass requests.Session — recent yfinance uses curl_cffi internally; custom sessions break.
+        # Jitter + stagger on Render: space out Yahoo calls a little.
         if is_render_deployment():
             time.sleep(random.uniform(0.2, 0.8))
-        session = _yahoo_session()
-        ticker = yf.Ticker(symbol, session=session)
+        ticker = yf.Ticker(symbol)
         info = ticker.info
         if not isinstance(info, dict):
             info = {}
