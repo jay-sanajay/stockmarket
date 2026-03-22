@@ -3,11 +3,23 @@
 import os
 
 from fastapi import APIRouter
+from starlette.responses import Response
 
 from config import is_production
 from schemas import HealthResponse
 
 router = APIRouter(tags=["health"])
+
+
+@router.head("/")
+def home_head():
+    """Render and some proxies use HEAD on / for health checks — avoid 405."""
+    return Response(status_code=200)
+
+
+@router.head("/health")
+def health_head():
+    return Response(status_code=200)
 
 
 @router.get("/", response_model=dict)
