@@ -18,7 +18,7 @@ This repo is a **monorepo**: React (Vite) at the root **and** FastAPI (`main.py`
   |----------|----------|
   | `GEMINI_API_KEY` | Yes |
   | `NEWSDATA_API_KEY` | Yes |
-  | `CORS_ORIGINS` | Yes — include **`https://stockmarket-rho.vercel.app`** (no trailing slash). Add preview URLs if you use Vercel preview deploys. |
+  | `CORS_ORIGINS` | Yes — include **`https://stockmarket-rho.vercel.app`**. **Preview** URLs (`stockmarket-…vercel.app`) are allowed automatically when `RENDER=true` (see `get_cors_origin_regex` in `config.py`). |
   | `ENVIRONMENT` | Optional — `production` |
   | `PERPLEXITY_API_KEY` | Optional |
 
@@ -62,5 +62,6 @@ Common causes:
 |-------|-----|
 | Old frontend bundle | Redeploy Vercel **after** setting `VITE_API_BASE_URL`; hard-refresh (Ctrl+Shift+R) or disable cache. |
 | API not updated | Redeploy Render; confirm branch is `main` and build logs succeed. |
-| CORS errors | Add your Vercel URL to `CORS_ORIGINS` on the API and restart API. |
+| CORS errors | On Render, include production Vercel URL in `CORS_ORIGINS`; redeploy **this repo** so preview URLs match the built-in regex. Never use `127.0.0.1` in `VITE_API_BASE_URL` on Vercel. |
+| HTTP 500 from `/analyze` | Render → **Logs**: often missing `GEMINI_API_KEY` / `NEWSDATA_API_KEY` or Gemini/model error. |
 | Wrong API URL in app | Set `VITE_API_BASE_URL` to your **current** Render URL. |

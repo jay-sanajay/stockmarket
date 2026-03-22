@@ -47,10 +47,27 @@ def get_cors_origins() -> list[str]:
 
 def get_cors_origin_regex() -> str | None:
     """
-    In development, allow any port on localhost / 127.0.0.1 (Vite may use 5174+).
-    Disabled when CORS_ORIGINS is set (explicit list) or in production.
-    Starlette compiles this string and uses fullmatch() on the Origin header.
+    Extra origins beyond allow_origins (OR logic in Starlette).
+    - Render: allow all JayQuant Vercel hosts (production + preview), e.g.
+      stockmarket-rho.vercel.app and stockmarket-xxx-jays-projects-xxx.vercel.app
+    - Local dev: any port on localhost / 127.0.0.1 when CORS_ORIGINS is unset.
+    Override with CORS_ORIGIN_REGEX (use \"none\" to disable).
     """
+    custom = os.getenv("CORS_ORIGIN_REGEX", "").strip()
+    if custom.lower() == "none":
+        return None
+    if custom:
+        return custom
+
+    on_render = os.getenv("RENDER", "").lower() in ("true", "1")
+    if on_render and os.getenv("CORS_VERCEL_REGEX", "1").lower() not in (
+        "0",
+        "false",
+        "no",
+    ):
+        # One regex covers production + every Vercel preview deployment URL
+        return r"^https://stockmarket[\w-]+\.vercel\.app$"
+
     if is_production():
         return None
     if os.getenv("CORS_ORIGINS", "").strip():
