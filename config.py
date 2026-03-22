@@ -59,8 +59,7 @@ def get_cors_origin_regex() -> str | None:
     if custom:
         return custom
 
-    on_render = os.getenv("RENDER", "").lower() in ("true", "1")
-    if on_render and os.getenv("CORS_VERCEL_REGEX", "1").lower() not in (
+    if is_render_deployment() and os.getenv("CORS_VERCEL_REGEX", "1").lower() not in (
         "0",
         "false",
         "no",
@@ -79,6 +78,11 @@ def is_production() -> bool:
     return os.getenv("ENVIRONMENT", "development").lower() in ("production", "prod")
 
 
+def is_render_deployment() -> bool:
+    """Render sets RENDER=true on web services — used for stricter upstream backoff defaults."""
+    return os.getenv("RENDER", "").lower() in ("true", "1")
+
+
 def get_log_level() -> str:
     return os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -91,14 +95,18 @@ def get_analysis_cache_ttl_seconds() -> float:
     raw = os.getenv("ANALYSIS_CACHE_TTL", "").strip()
     if raw:
         return max(60.0, float(raw))
-    on_render = os.getenv("RENDER", "").lower() in ("true", "1")
-    return 1800.0 if on_render else 300.0  # 30 min vs 5 min
+    return 3600.0 if is_render_deployment() else 300.0  # 1h on Render vs 5 min local
 
 
 def skip_gemini_for_sentiment() -> bool:
     """
     If true, use keyword heuristic on headlines instead of a Gemini call — halves Gemini usage
     per /analyze (helps free-tier quotas on shared hosting IPs).
-    Set SKIP_GEMINI_SENTIMENT=1 on Render if you hit rate limits often.
+    On Render, defaults to **on** unless SKIP_GEMINI_SENTIMENT=0/false/no. Local dev defaults off.
     """
-    return os.getenv("SKIP_GEMINI_SENTIMENT", "").lower() in ("1", "true", "yes")
+    raw = os.getenv("SKIP_GEMINI_SENTIMENT", "").strip().lower()
+    if raw in ("0", "false", "no"):
+        return False
+    if raw in ("1", "true", "yes"):
+        return True
+    return is_render_deployment()

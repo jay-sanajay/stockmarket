@@ -10,10 +10,11 @@ from datetime import datetime
 
 import yfinance as yf
 
-from config import get_analysis_cache_ttl_seconds
+from config import get_analysis_cache_ttl_seconds, is_render_deployment
 from services import chart_service, gemini_service, market_service, news_service
 from services.technical_service import compute_technicals, last_numeric
 from utils.cache import BoundedTTLCache
+from utils.rate_limit import looks_like_upstream_rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +66,15 @@ def _is_yf_transient(exc: BaseException) -> bool:
         or "timed out" in s
         or "connection" in s
         or "temporar" in s
+        or "unusual traffic" in s
+        or ("yahoo" in s and ("blocked" in s or "error" in s or "limit" in s))
+        or looks_like_upstream_rate_limit(exc)
     )
 
 
-_YF_RETRIES = 3
-_YF_DELAYS = (0, 4.0, 10.0)
+# Render shares Yahoo’s rate limits across many apps — more retries + longer backoff.
+_YF_RETRIES = 5 if is_render_deployment() else 3
+_YF_DELAYS = (0.0, 5.0, 14.0, 28.0, 50.0) if is_render_deployment() else (0.0, 4.0, 10.0)
 
 
 def _fetch_yfinance(symbol: str, timeout: float = 45.0):
@@ -421,7 +426,15 @@ Strict FORMAT:
         ).strip()
     except Exception as e:
         logger.exception("Gemini report failed: %s", e)
-        gemini_report = f"Report generation failed: {e!s}"
+        if looks_like_upstream_rate_limit(e):
+            gemini_report = (
+                "### AI narrative temporarily unavailable (Google AI rate limit on shared hosting).\n\n"
+                "Fundamentals, technicals, and the verdict below still use live data. "
+                "Wait a few minutes and analyze again for the full Gemini report.\n\n"
+                f"**Suggested stance:** {suggested}\n**Summary:** {strategy_notes}"
+            )
+        else:
+            gemini_report = f"Report generation failed: {e!s}"
 
     verdict = f"📌 Final Verdict: **{suggested}** — {strategy_notes}"
 

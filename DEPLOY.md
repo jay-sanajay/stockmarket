@@ -53,8 +53,8 @@ This repo is a **monorepo**: React (Vite) at the root **and** FastAPI (`main.py`
   | `CORS_ORIGINS` | Yes — include **`https://stockmarket-rho.vercel.app`**. **Preview** URLs (`stockmarket-…vercel.app`) are allowed automatically when `RENDER=true` (see `get_cors_origin_regex` in `config.py`). |
   | `ENVIRONMENT` | Optional — `production` |
   | `PERPLEXITY_API_KEY` | Optional |
-  | `ANALYSIS_CACHE_TTL` | Optional — seconds for in-memory `/analyze` cache (Render defaults to **30 minutes** when unset to reduce repeat Yahoo/Gemini hits). |
-  | `SKIP_GEMINI_SENTIMENT` | Optional — set to `1` to use keyword sentiment instead of a second Gemini call (helps free-tier rate limits on shared hosting IPs). |
+  | `ANALYSIS_CACHE_TTL` | Optional — seconds for in-memory `/analyze` cache (Render defaults to **1 hour** when unset). |
+  | `SKIP_GEMINI_SENTIMENT` | Optional — on Render, keyword sentiment is the **default** (fewer Gemini calls). Set to `0` / `false` if you want Gemini for news sentiment anyway. |
 
 - After deploy, copy the public API URL, e.g. `https://xxxxx.onrender.com`.
 
