@@ -24,6 +24,12 @@ def fetch_news_sentiment(stock_name: str, fallback_term: str = "Indian Stock Mar
             f"https://newsdata.io/api/1/news?apikey={api_key}&q={q}&country=in&language=en"
         )
         res = requests.get(url, timeout=15)
+        if res.status_code == 429:
+            logger.warning("NewsData rate limited for q=%s", stock_name)
+            return (
+                "News temporarily unavailable (provider rate limit). Treating sentiment as neutral.",
+                [],
+            )
         res.raise_for_status()
         data = res.json()
         headlines = [
@@ -38,6 +44,12 @@ def fetch_news_sentiment(stock_name: str, fallback_term: str = "Indian Stock Mar
                 f"&q={quote(fallback_term)}&country=in&language=en"
             )
             res2 = requests.get(url2, timeout=15)
+            if res2.status_code == 429:
+                logger.warning("NewsData rate limited fallback query")
+                return (
+                    "News temporarily unavailable (provider rate limit). Treating sentiment as neutral.",
+                    [],
+                )
             res2.raise_for_status()
             data2 = res2.json()
             headlines = [

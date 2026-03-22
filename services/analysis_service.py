@@ -5,6 +5,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import logging
+import time
 from datetime import datetime
 
 import yfinance as yf
@@ -50,21 +51,56 @@ def log_verdict(symbol: str, price: float | None, verdict: str) -> None:
         logger.exception("log_verdict failed: %s", e)
 
 
+def _is_yf_transient(exc: BaseException) -> bool:
+    s = str(exc).lower()
+    return (
+        "too many" in s
+        or "429" in s
+        or "rate" in s
+        or "timeout" in s
+        or "timed out" in s
+        or "connection" in s
+        or "temporar" in s
+    )
+
+
+_YF_RETRIES = 3
+_YF_DELAYS = (0, 4.0, 10.0)
+
+
 def _fetch_yfinance(symbol: str, timeout: float = 45.0):
-    """Run yfinance I/O in a thread with timeout (avoids hanging workers)."""
+    """Run yfinance I/O in a thread with timeout; retries on Yahoo rate limits."""
 
     def _work():
         ticker = yf.Ticker(symbol)
         info = ticker.info
         if not isinstance(info, dict):
             info = {}
-        # MA200 needs ~200 trading days; 6mo is too short. Use 2y, chart uses last ~6mo slice.
         hist = ticker.history(period="2y")
         return info, hist
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-        fut = pool.submit(_work)
-        return fut.result(timeout=timeout)
+    last_err: BaseException | None = None
+    for attempt in range(_YF_RETRIES):
+        if attempt > 0:
+            time.sleep(_YF_DELAYS[attempt])
+            logger.warning(
+                "yfinance retry %s/%s for %s after transient error",
+                attempt + 1,
+                _YF_RETRIES,
+                symbol,
+            )
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                fut = pool.submit(_work)
+                return fut.result(timeout=timeout)
+        except Exception as e:
+            last_err = e
+            if _is_yf_transient(e) and attempt < _YF_RETRIES - 1:
+                continue
+            raise
+    if last_err:
+        raise last_err
+    raise RuntimeError("yfinance: unexpected retry loop exit")
 
 
 def _safe_pe(info: dict):

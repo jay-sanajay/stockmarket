@@ -58,6 +58,8 @@ export default function App() {
     try {
       return await axios.get(url);
     } catch (err) {
+      // Do not retry rate limits — avoids hammering Yahoo / Gemini / News APIs
+      if (err.response?.status === 429) throw err;
       if (retries === 0) throw err;
       await new Promise((r) => setTimeout(r, delay));
       return fetchWithRetry(url, retries - 1, delay * 2);

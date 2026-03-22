@@ -1,6 +1,7 @@
 """Google Gemini via google.generativeai."""
 
 import logging
+import time
 
 import google.generativeai as genai
 
@@ -41,6 +42,26 @@ def _should_try_next_model(exc: BaseException) -> bool:
     )
 
 
+def _is_rate_limit(exc: BaseException) -> bool:
+    s = str(exc).lower()
+    if "429" in str(exc) or "too many" in s:
+        return True
+    if "resource exhausted" in s or "quota" in s:
+        return True
+    if "rate" in s and ("limit" in s or "limited" in s):
+        return True
+    try:
+        from google.api_core.exceptions import ResourceExhausted
+
+        return isinstance(exc, ResourceExhausted)
+    except ImportError:
+        return False
+
+
+_GEMINI_RATE_RETRIES = 4
+_GEMINI_RATE_DELAYS = (1.5, 3.0, 6.0, 12.0)
+
+
 def generate_text(prompt: str, context: str = "generate_text") -> str:
     """Generate text; tries multiple model IDs if Google returns 404 for deprecated names."""
     global _cached_model_name
@@ -60,38 +81,60 @@ def generate_text(prompt: str, context: str = "generate_text") -> str:
     last_error: BaseException | None = None
 
     for name in candidates:
-        try:
-            model = genai.GenerativeModel(name)
-            response = model.generate_content(prompt)
-            text = ""
+        model = genai.GenerativeModel(name)
+        for attempt in range(_GEMINI_RATE_RETRIES):
             try:
-                text = (response.text or "").strip()
-            except (ValueError, AttributeError) as e:
-                logger.warning("Gemini response.text unavailable (%s): %s", context, e)
-            if not text and getattr(response, "candidates", None):
-                parts = []
-                for c in response.candidates:
-                    if c.content and c.content.parts:
-                        for p in c.content.parts:
-                            if hasattr(p, "text") and p.text:
-                                parts.append(p.text)
-                text = "\n".join(parts).strip()
+                response = model.generate_content(prompt)
+                text = ""
+                try:
+                    text = (response.text or "").strip()
+                except (ValueError, AttributeError) as e:
+                    logger.warning("Gemini response.text unavailable (%s): %s", context, e)
+                if not text and getattr(response, "candidates", None):
+                    parts = []
+                    for c in response.candidates:
+                        if c.content and c.content.parts:
+                            for p in c.content.parts:
+                                if hasattr(p, "text") and p.text:
+                                    parts.append(p.text)
+                    text = "\n".join(parts).strip()
 
-            _cached_model_name = name
-            logger.info("Gemini OK (%s) model=%s", context, name)
-            return text or "No response text from Gemini."
-        except Exception as e:
-            last_error = e
-            if _should_try_next_model(e):
-                logger.warning(
-                    "Gemini model %s failed (%s), trying next: %s",
-                    name,
-                    context,
-                    e,
-                )
-                continue
-            logger.exception("Gemini generate_content failed (%s): %s", context, e)
-            raise
+                _cached_model_name = name
+                logger.info("Gemini OK (%s) model=%s", context, name)
+                return text or "No response text from Gemini."
+            except Exception as e:
+                last_error = e
+                if _is_rate_limit(e):
+                    if attempt < _GEMINI_RATE_RETRIES - 1:
+                        delay = _GEMINI_RATE_DELAYS[
+                            min(attempt, len(_GEMINI_RATE_DELAYS) - 1)
+                        ]
+                        logger.warning(
+                            "Gemini rate limit (%s) model=%s attempt %s/%s, sleep %.1fs",
+                            context,
+                            name,
+                            attempt + 1,
+                            _GEMINI_RATE_RETRIES,
+                            delay,
+                        )
+                        time.sleep(delay)
+                        continue
+                    logger.warning(
+                        "Gemini rate limit persists on model=%s (%s), trying next model",
+                        name,
+                        context,
+                    )
+                    break
+                if _should_try_next_model(e):
+                    logger.warning(
+                        "Gemini model %s failed (%s), trying next: %s",
+                        name,
+                        context,
+                        e,
+                    )
+                    break
+                logger.exception("Gemini generate_content failed (%s): %s", context, e)
+                raise
 
     logger.exception("All Gemini models exhausted (%s): %s", context, last_error)
     if last_error:

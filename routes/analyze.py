@@ -15,6 +15,17 @@ logger = logging.getLogger(__name__)
 _SYMBOL_PATTERN = re.compile(r"^[A-Za-z0-9.\-^]+$")
 
 
+def _looks_like_upstream_rate_limit(exc: BaseException) -> bool:
+    s = str(exc).lower()
+    if "429" in str(exc):
+        return True
+    if "too many" in s or "resource exhausted" in s:
+        return True
+    if "rate" in s and ("limit" in s or "limited" in s):
+        return True
+    return False
+
+
 def _validate_symbol(raw: str) -> str:
     s = raw.strip().upper()
     if not s:
@@ -76,6 +87,14 @@ def analyze(
         ) from e
     except Exception as e:
         logger.exception("analyze: unexpected failure for %s: %s", symbol, e)
+        if _looks_like_upstream_rate_limit(e):
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    "Upstream rate limit (Yahoo Finance, Google AI, or news). "
+                    "Wait 1–2 minutes and try again."
+                ),
+            ) from e
         raise HTTPException(
             status_code=500,
             detail=f"Analysis failed: {e!s}",
