@@ -4,7 +4,7 @@
  * - Production (Vercel): set VITE_API_BASE_URL to your **public** Render API URL (never localhost).
  * - Fallback: used when env is missing or invalid for production builds.
  */
-const PRODUCTION_API_FALLBACK = "https://stockmarket-rz6w.onrender.com";
+const PRODUCTION_API_FALLBACK = "https://stockmarket-jay.onrender.com";
 
 function isLocalhostUrl(url) {
   if (!url || typeof url !== "string") return false;
