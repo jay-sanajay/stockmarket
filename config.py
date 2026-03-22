@@ -81,3 +81,24 @@ def is_production() -> bool:
 
 def get_log_level() -> str:
     return os.getenv("LOG_LEVEL", "INFO").upper()
+
+
+def get_analysis_cache_ttl_seconds() -> float:
+    """
+    Longer TTL on Render reduces repeat Yahoo/Gemini/News hits from the same shared IP.
+    Override with ANALYSIS_CACHE_TTL (seconds), e.g. 3600.
+    """
+    raw = os.getenv("ANALYSIS_CACHE_TTL", "").strip()
+    if raw:
+        return max(60.0, float(raw))
+    on_render = os.getenv("RENDER", "").lower() in ("true", "1")
+    return 1800.0 if on_render else 300.0  # 30 min vs 5 min
+
+
+def skip_gemini_for_sentiment() -> bool:
+    """
+    If true, use keyword heuristic on headlines instead of a Gemini call — halves Gemini usage
+    per /analyze (helps free-tier quotas on shared hosting IPs).
+    Set SKIP_GEMINI_SENTIMENT=1 on Render if you hit rate limits often.
+    """
+    return os.getenv("SKIP_GEMINI_SENTIMENT", "").lower() in ("1", "true", "yes")

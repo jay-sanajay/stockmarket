@@ -21,8 +21,14 @@ This repo is a **monorepo**: React (Vite) at the root **and** FastAPI (`main.py`
   | `CORS_ORIGINS` | Yes — include **`https://stockmarket-rho.vercel.app`**. **Preview** URLs (`stockmarket-…vercel.app`) are allowed automatically when `RENDER=true` (see `get_cors_origin_regex` in `config.py`). |
   | `ENVIRONMENT` | Optional — `production` |
   | `PERPLEXITY_API_KEY` | Optional |
+  | `ANALYSIS_CACHE_TTL` | Optional — seconds for in-memory `/analyze` cache (Render defaults to **30 minutes** when unset to reduce repeat Yahoo/Gemini hits). |
+  | `SKIP_GEMINI_SENTIMENT` | Optional — set to `1` to use keyword sentiment instead of a second Gemini call (helps free-tier rate limits on shared hosting IPs). |
 
 - After deploy, copy the public API URL, e.g. `https://xxxxx.onrender.com`.
+
+### “Works on localhost, fails on Vercel” (rate limits)
+
+Free tiers for **Yahoo Finance**, **Gemini**, and **NewsData** often throttle **shared outbound IPs** (Render, etc.). Your app may show the friendly “wait 2–3 minutes” message. Mitigations: enable **`SKIP_GEMINI_SENTIMENT=1`** on Render, rely on the longer default cache on Render, wait between tests, or use paid / higher quotas.
 
 ## 2. Frontend (Vercel)
 

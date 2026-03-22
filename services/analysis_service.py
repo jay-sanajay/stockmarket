@@ -10,13 +10,17 @@ from datetime import datetime
 
 import yfinance as yf
 
+from config import get_analysis_cache_ttl_seconds
 from services import chart_service, gemini_service, market_service, news_service
 from services.technical_service import compute_technicals, last_numeric
 from utils.cache import BoundedTTLCache
 
 logger = logging.getLogger(__name__)
 
-stock_cache = BoundedTTLCache(max_size=64, ttl_seconds=300)
+stock_cache = BoundedTTLCache(
+    max_size=64,
+    ttl_seconds=get_analysis_cache_ttl_seconds(),
+)
 
 
 def is_retail_stock(info: dict) -> bool:
