@@ -148,30 +148,24 @@ def _download_to_info_hist(symbol: str, period: str) -> tuple[dict, pd.DataFrame
         "previousClose": last_close,
     }
 
-    # Attempt to fetch fundamentals separately — this may or may not work
+    # Attempt to fetch fast_info separately — this uses chart endpoints which are rarely blocked
     try:
         if is_render_deployment():
-            time.sleep(random.uniform(0.3, 0.8))
+            time.sleep(random.uniform(0.2, 0.5))
         ticker = yf.Ticker(symbol)
-        ticker_info = ticker.info
-        if isinstance(ticker_info, dict) and len(ticker_info) > 5:
-            # Merge fundamentals into info, keeping our price as fallback
-            for key in (
-                "longName", "shortName", "sector", "industry",
-                "trailingPE", "forwardPE", "priceToBook", "trailingEps",
-                "bookValue", "returnOnEquity", "returnOnAssets",
-                "returnOnCapitalEmployed", "debtToEquity",
-                "dividendYield", "marketCap", "totalRevenue",
-                "netIncomeToCommon", "currentPrice", "regularMarketPrice",
-                "fiftyTwoWeekHigh", "fiftyTwoWeekLow",
-                "fiftyDayAverage", "twoHundredDayAverage",
-            ):
-                val = ticker_info.get(key)
-                if val is not None:
-                    info[key] = val
-            logger.info("Fallback fundamentals fetched for %s (%d keys)", symbol, len(ticker_info))
+        fi = ticker.fast_info
+        
+        info["marketCap"] = getattr(fi, "market_cap", None)
+        info["currentPrice"] = getattr(fi, "last_price", last_close)
+        info["previousClose"] = getattr(fi, "previous_close", last_close)
+        info["fiftyTwoWeekHigh"] = getattr(fi, "year_high", None)
+        info["fiftyTwoWeekLow"] = getattr(fi, "year_low", None)
+        info["fiftyDayAverage"] = getattr(fi, "fifty_day_average", None)
+        info["twoHundredDayAverage"] = getattr(fi, "two_hundred_day_average", None)
+        
+        logger.info("Fallback fast_info fetched for %s", symbol)
     except Exception as e:
-        logger.warning("Fallback fundamentals fetch failed for %s: %s", symbol, e)
+        logger.warning("Fallback fast_info fetch failed for %s: %s", symbol, e)
 
     return info, hist
 

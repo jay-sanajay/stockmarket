@@ -338,6 +338,9 @@ export default function StockDashboard({ data }) {
       {tab === "fundamentals" && (
         <section className="tab-panel" role="tabpanel">
           <div className="metrics-grid metrics-grid-advanced">
+            <div className="metric-disclaimer" style={{ gridColumn: "1 / -1", fontSize: "0.85rem", color: "#94a3b8", marginBottom: "8px" }}>
+              Note: Some fundamental metrics (like P/E, EPS, ROE) may appear as N/A due to Yahoo Finance API restrictions on cloud hosting.
+            </div>
             {Object.entries(ratios)
               .filter(([label]) => label !== "PEG Ratio" && label !== "Face Value")
               .map(([label, val], index) => (
