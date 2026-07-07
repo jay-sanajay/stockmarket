@@ -124,7 +124,7 @@ def _download_to_info_hist(symbol: str, period: str) -> tuple[dict, pd.DataFrame
     """
     Alternate Yahoo path (yf.download) — different endpoints than Ticker.info/history;
     often still works when the Ticker path is rate-limited on shared hosting.
-    Fundamentals in info are minimal (price only); ratios may be missing.
+    Tries to also fetch fundamentals separately via Ticker.info.
     """
     if is_render_deployment():
         time.sleep(random.uniform(0.1, 0.45))
@@ -137,6 +137,8 @@ def _download_to_info_hist(symbol: str, period: str) -> tuple[dict, pd.DataFrame
     )
     hist = _normalize_yf_download_df(raw, symbol)
     last_close = float(hist["Close"].iloc[-1])
+
+    # Try to get fundamentals even in fallback mode
     info = {
         "longName": symbol,
         "shortName": symbol,
@@ -145,6 +147,32 @@ def _download_to_info_hist(symbol: str, period: str) -> tuple[dict, pd.DataFrame
         "regularMarketPreviousClose": last_close,
         "previousClose": last_close,
     }
+
+    # Attempt to fetch fundamentals separately — this may or may not work
+    try:
+        if is_render_deployment():
+            time.sleep(random.uniform(0.3, 0.8))
+        ticker = yf.Ticker(symbol)
+        ticker_info = ticker.info
+        if isinstance(ticker_info, dict) and len(ticker_info) > 5:
+            # Merge fundamentals into info, keeping our price as fallback
+            for key in (
+                "longName", "shortName", "sector", "industry",
+                "trailingPE", "forwardPE", "priceToBook", "trailingEps",
+                "bookValue", "returnOnEquity", "returnOnAssets",
+                "returnOnCapitalEmployed", "debtToEquity",
+                "dividendYield", "marketCap", "totalRevenue",
+                "netIncomeToCommon", "currentPrice", "regularMarketPrice",
+                "fiftyTwoWeekHigh", "fiftyTwoWeekLow",
+                "fiftyDayAverage", "twoHundredDayAverage",
+            ):
+                val = ticker_info.get(key)
+                if val is not None:
+                    info[key] = val
+            logger.info("Fallback fundamentals fetched for %s (%d keys)", symbol, len(ticker_info))
+    except Exception as e:
+        logger.warning("Fallback fundamentals fetch failed for %s: %s", symbol, e)
+
     return info, hist
 
 
@@ -154,10 +182,18 @@ def _fetch_yfinance(symbol: str, timeout: float | None = None):
         timeout = 75.0 if is_render_deployment() else 45.0
 
     def _work_ticker():
-        # Do not pass requests.Session — yfinance expects curl_cffi internally.
+        import requests
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+        })
+        
         if is_render_deployment():
             time.sleep(random.uniform(0.2, 0.8))
-        ticker = yf.Ticker(symbol)
+            
+        ticker = yf.Ticker(symbol, session=session)
         info = ticker.info
         if not isinstance(info, dict):
             info = {}
