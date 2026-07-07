@@ -1,5 +1,9 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 import "./Dashboard.css";
+import { getApiBase } from "./api.js";
+import { useAuth } from "./context/AuthContext.jsx";
 import {
   BarChart,
   Bar,
@@ -10,6 +14,8 @@ import {
   ResponsiveContainer,
   LabelList,
   Cell,
+  LineChart,
+  Line,
 } from "recharts";
 
 const COLORS = {
@@ -34,6 +40,7 @@ const TABS = [
   { id: "news", label: "News & flow", icon: "▸" },
   { id: "report", label: "AI report", icon: "✦" },
   { id: "strategy", label: "Strategy", icon: "◎" },
+  { id: "history", label: "History", icon: "⏱" },
 ];
 
 function normalizeScore(raw) {
@@ -43,8 +50,13 @@ function normalizeScore(raw) {
 }
 
 export default function StockDashboard({ data }) {
+  const { token, authHeaders } = useAuth();
   const [tab, setTab] = useState("overview");
   const [copied, setCopied] = useState(false);
+  const [hist, setHist] = useState(null);
+  const [histLoading, setHistLoading] = useState(false);
+  const [histErr, setHistErr] = useState("");
+  const [watchMsg, setWatchMsg] = useState("");
 
   const {
     company,
@@ -112,6 +124,46 @@ export default function StockDashboard({ data }) {
   const scoreNorm = normalizeScore(signal_score);
   const scoreBarPct =
     scoreNorm == null ? 0 : ((scoreNorm + 3) / 15) * 100;
+
+  useEffect(() => {
+    if (tab !== "history" || !symbol) return;
+    const base = getApiBase();
+    const path = `${base}/stocks/${encodeURIComponent(String(symbol).trim())}/verdict-history`;
+    setHistLoading(true);
+    setHistErr("");
+    axios
+      .get(path)
+      .then((r) => setHist(r.data))
+      .catch((e) => setHistErr(e.response?.data?.detail || e.message || "Failed"))
+      .finally(() => setHistLoading(false));
+  }, [tab, symbol]);
+
+  const addToWatchlist = useCallback(async () => {
+    setWatchMsg("");
+    if (!token) {
+      setWatchMsg("Log in to save symbols.");
+      return;
+    }
+    if (!symbol) return;
+    const base = getApiBase();
+    try {
+      const lists = await axios.get(`${base}/watchlists`, { headers: authHeaders });
+      const wid = lists.data?.[0]?.id;
+      if (!wid) {
+        setWatchMsg("No watchlist found.");
+        return;
+      }
+      await axios.post(
+        `${base}/watchlists/${wid}/items`,
+        { symbol: String(symbol).trim(), pinned: false },
+        { headers: authHeaders }
+      );
+      setWatchMsg("Added to your watchlist.");
+    } catch (e) {
+      const d = e.response?.data?.detail;
+      setWatchMsg(typeof d === "string" ? d : e.message || "Could not add");
+    }
+  }, [token, symbol, authHeaders]);
 
   const copyReport = useCallback(async () => {
     try {
@@ -183,6 +235,17 @@ export default function StockDashboard({ data }) {
           {strategy_type && (
             <span className={`strategy-pill ${verdictClass}`}>{strategy_type}</span>
           )}
+          <div className="dash-hero-actions">
+            <button type="button" className="btn-ghost" onClick={addToWatchlist}>
+              Add to watchlist
+            </button>
+            {!token && (
+              <Link to="/login" className="link-inline">
+                Log in
+              </Link>
+            )}
+            {watchMsg && <span className="small muted">{watchMsg}</span>}
+          </div>
         </div>
         <div className="dash-hero-stats">
           <div className="stat-block">
@@ -446,6 +509,65 @@ export default function StockDashboard({ data }) {
                 No entry/target bands for this signal — see AI report.
               </p>
             )}
+        </section>
+      )}
+
+      {tab === "history" && (
+        <section className="tab-panel glass-panel" role="tabpanel">
+          <h2 className="inline-heading">Verdict history</h2>
+          {histLoading && <p className="muted">Loading history…</p>}
+          {histErr && <p className="error-inline">{String(histErr)}</p>}
+          {!histLoading && hist?.change_since_previous && (
+            <p className="history-delta">{hist.change_since_previous}</p>
+          )}
+          {!histLoading && hist?.records?.length > 1 && (
+            <div className="chart-wrap history-chart">
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart
+                  data={hist.records.map((r) => ({
+                    t: r.recorded_at?.slice(0, 16)?.replace("T", " ") ?? "",
+                    score: r.signal_score != null ? Number(r.signal_score) : null,
+                  }))}
+                  margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="t" stroke="#94a3b8" tick={{ fontSize: 10 }} />
+                  <YAxis stroke="#94a3b8" domain={["auto", "auto"]} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: 8,
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="#38bdf8"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    connectNulls
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          <ul className="history-list">
+            {(hist?.records || []).map((r) => (
+              <li key={r.id} className="history-item">
+                <span className="history-date">{r.recorded_at || "—"}</span>
+                <span className="history-verdict">{r.strategy_type || r.verdict || "—"}</span>
+                <span className="muted small">
+                  score {r.signal_score ?? "—"} · ₹{r.price ?? "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {!histLoading && hist && (!hist.records || hist.records.length === 0) && (
+            <p className="muted">
+              No saved verdicts yet. Run analysis again later to build a timeline.
+            </p>
+          )}
         </section>
       )}
 

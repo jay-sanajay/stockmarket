@@ -1,0 +1,162 @@
+%------------------------
+% Resume — Cisco SE (Networking/App/Systems) | Strict 1-Page | ATS-Friendly
+%------------------------
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[left=0.4in, top=0.3in, right=0.4in, bottom=0.3in]{geometry}
+\usepackage{latexsym}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[T1]{fontenc}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+
+\titleformat{\section}{
+  \vspace{-10pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-6pt}]
+
+\raggedright
+
+%-------------------------
+% Custom ATS-Friendly Commands
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0in, label={}, itemsep=0pt, parsep=0pt, topsep=0pt, partopsep=0pt]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}\vspace{-2pt}}
+
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.15in, itemsep=0pt, parsep=0pt, topsep=0pt, partopsep=0pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-2pt}}
+
+\newcommand{\resumeItem}[1]{\item\small{#1}}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-2pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \vspace{-1pt}\item
+    \begin{tabular*}{1.0\textwidth}{l@{\extracolsep{\fill}}r}
+      #1 & \textbf{\small #2} \\
+    \end{tabular*}\vspace{-2pt}
+}
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+{\Huge \textbf{Jay Takalgavankar}} \\ \vspace{3pt}
+\small
+\href{mailto:jaytakalgavankar@gmail.com}{jaytakalgavankar@gmail.com} \;|\;
++91-9766843534 \;|\;
+\href{https://github.com/jay-sanajay}{GitHub} \;|\;
+\href{https://leetcode.com/u/jaykt/}{LeetCode} \;|\;
+\href{https://www.linkedin.com/in/jay-takalgavankar-a1800828b/}{LinkedIn}
+\end{center}
+
+\vspace{-14pt}
+%-----------SUMMARY-----------
+\section{Professional Summary}
+\vspace{1pt}
+\small{Software Engineer (2027 graduate) with strong CS fundamentals and a deep interest in networking, security, and writing clean, well-tested code. Proficient in Python and C++ with hands-on experience in client-server applications, secure REST APIs, and Agile engineering practices. Strong troubleshooting aptitude with a passion for systems ranging from protocols to application layers, consistent with Design Thinking Principles.}
+
+\vspace{-10pt}
+%-----------EDUCATION-----------
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {National Institute of Technology, Kurukshetra}{Kurukshetra, India}
+    {Bachelor of Technology in Industrial Internet of Things; \textbf{CGPA: 8.13 / 10}}{Aug 2023 -- May 2027}
+    \vspace{1pt}
+    \small{\textbf{Coursework:} Data Structures \& Algorithms, OOP, Computer Networks (TCP/IP, Routing, Switching), Operating Systems (Unix/Linux), DBMS, Network Security, Software Engineering}
+\resumeSubHeadingListEnd
+
+\vspace{-10pt}
+%-----------EXPERIENCE-----------
+\section{Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {The BAAP Company}{Sangamner, India}
+    {Software Engineering Intern}{May 2025 -- Jul 2025}
+    \resumeItemListStart
+        \resumeItem{Designed 8+ REST API endpoints with input validation and TLS-secured authentication, applying secure coding principles to protect client-server data flows.}
+        \resumeItem{Built Python scripts for data pipeline orchestration and schema extraction, writing unit tests per module and reducing manual effort by 40\%.}
+        \resumeItem{Wrote clean, functional code following Agile practices, actively participating in code reviews and addressing review feedback per Secure SDLC standards.}
+        \resumeItem{Debugged complex front-end/backend integration issues, systematically isolating network request failures and resolving API latency bottlenecks by 95\%.}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {JPMorganChase}{Remote}
+    {Software Engineering Virtual Experience}{May 2025}
+    \resumeItemListStart
+        \resumeItem{Developed a Spring Boot (Java) microservice with Apache Kafka, building a fault-tolerant client-server system handling 1,000+ concurrent TCP connections.}
+        \resumeItem{Integrated 3+ external REST APIs with access controls, input sanitization, proper error handling, and standardized JSON protocols following secure coding standards.}
+        \resumeItem{Executed 15+ test cases across unit, integration, and system levels; performed systematic debugging, root cause analysis, and postmortem documentation driving reliability above 95\%.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\vspace{-10pt}
+%-----------PROJECTS-----------
+\section{Projects}
+\resumeSubHeadingListStart
+
+  \resumeProjectHeading
+    {\textbf{Network Traffic Analyzer \& Protocol Debugger} $|$ \emph{Python, Scapy, TCP/IP, Socket Programming} $|$ \href{https://github.com/jay-sanajay}{GitHub}}{}
+    \resumeItemListStart
+      \resumeItem{Built a packet capture and analysis tool using Scapy and raw sockets, inspecting TCP/IP headers, HTTP requests, and DNS queries across live interfaces.}
+      \resumeItem{Implemented protocol-level debugging to detect TCP retransmissions, malformed packets, and suspicious patterns indicative of port scanning or intrusion.}
+      \resumeItem{Designed a real-time dashboard visualizing traffic by protocol (TCP, UDP, ICMP), source/destination IP, and port for network troubleshooting.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Store Intelligence Platform} $|$ \emph{Python, React.js, FastAPI, Docker, CI/CD} $|$ \href{https://github.com/jay-sanajay}{GitHub}}{}
+    \resumeItemListStart
+      \resumeItem{Architected a multi-service application on Docker/Linux, processing 5,000+ daily events through secure REST APIs with TLS and token-based auth.}
+      \resumeItem{Built a YOLOv8 computer vision pipeline in Python with optimized performance, streaming real-time analytics to a user-centered React.js dashboard.}
+      \resumeItem{Wrote comprehensive unit and integration tests for all endpoints, implementing CI/CD testing pipelines and reducing deployment time to under 10 minutes.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Real-Time Logistics Platform} $|$ \emph{React.js, FastAPI, Python, REST APIs} $|$ \href{https://smart-logistics-app.vercel.app/}{Live} $|$ \href{https://github.com/jay-sanajay}{GitHub}}{}
+    \resumeItemListStart
+      \resumeItem{Built a full-stack app using React.js and FastAPI to securely process 150+ delivery records, applying OOP principles for modular, maintainable code.}
+      \resumeItem{Led code reviews and debugging sessions using dev tools and Python debuggers; optimized network request profiling to cut client-server latency by 70\%.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\vspace{-10pt}
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0in, label={}]
+    \small{\item{
+     \textbf{Languages}{: Python (primary), C++, Java, TypeScript, JavaScript, SQL, Bash/Shell Scripting} \\ \vspace{1pt}
+     \textbf{CS Fundamentals}{: Data Structures \& Algorithms, Object-Oriented Design \& Programming, Operating Systems, DBMS, Software Engineering} \\ \vspace{1pt}
+     \textbf{Networking \& Security}{: TCP/IP, Socket Programming, Routing \& Switching, HTTP/DNS, TLS/SSL, Secure Coding, Firewall Concepts, Scapy/Wireshark} \\ \vspace{1pt}
+     \textbf{Testing \& Debugging}{: Unit Testing, Integration Testing, Debugging Tools, Code Reviews, Troubleshooting, Incident Triaging, Postmortem Analysis} \\ \vspace{1pt}
+     \textbf{Frameworks \& DevOps}{: FastAPI, Spring Boot, React.js, Node.js, Docker, Git, CI/CD, Linux/Unix, Agile/Scrum} \\ \vspace{1pt}
+     \textbf{Databases \& Architecture}{: PostgreSQL, MongoDB, REST API Design, Client-Server Architecture, Microservices, Cloud Deployment}
+    }}
+ \end{itemize}
+
+\vspace{-14pt}
+%-----------ACHIEVEMENTS-----------
+\section{Achievements}
+\resumeItemListStart
+    \resumeItem{Ranked \textbf{324th out of 16,000+} participants (top 2\%) in the \textbf{Goldman Sachs Engineering Hackathon}, demonstrating creative problem-solving.}
+    \resumeItem{Solved \textbf{600+ DSA problems} across LeetCode and CodeChef; earned a \textbf{3\ensuremath{\star} CodeChef} rating in global algorithmic contests.}
+    \resumeItem{Secured \textbf{98.5 percentile in JEE Main} and top \textbf{1.5\% in JEE Advanced}, reflecting self-motivated learning and analytical aptitude.}
+\resumeItemListEnd
+
+\end{document}

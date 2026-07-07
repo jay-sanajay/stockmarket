@@ -37,7 +37,15 @@ def is_retail_stock(info: dict) -> bool:
         return False
 
 
-def log_verdict(symbol: str, price: float | None, verdict: str) -> None:
+def log_verdict(
+    symbol: str,
+    price: float | None,
+    verdict: str,
+    *,
+    signal_score: float | None = None,
+    strategy_type: str | None = None,
+    news_sentiment: str | None = None,
+) -> None:
     record = {
         "symbol": symbol,
         "date": datetime.now().strftime("%Y-%m-%d"),
@@ -56,6 +64,19 @@ def log_verdict(symbol: str, price: float | None, verdict: str) -> None:
             json.dump([record], f, indent=2)
     except Exception as e:
         logger.exception("log_verdict failed: %s", e)
+    try:
+        from services.verdict_db_service import record_verdict_db
+
+        record_verdict_db(
+            symbol,
+            price,
+            verdict,
+            signal_score=signal_score,
+            strategy_type=strategy_type,
+            news_sentiment=news_sentiment,
+        )
+    except Exception as e:
+        logger.debug("verdict DB mirror skipped: %s", e)
 
 
 def _is_yf_transient(exc: BaseException) -> bool:
@@ -291,15 +312,22 @@ def run_analysis(stock: str) -> dict:
     ma50 = last_numeric(hist["MA50"], "MA50")
     ma200 = last_numeric(hist["MA200"], "MA200")
 
-    if rsi is None or ma50 is None or ma200 is None:
+    partial_data = False
+    if rsi is None:
+        rsi = 50.0  # Neutral default
+        partial_data = True
+    if ma50 is None:
+        ma50 = price  # Use current price as proxy
+        partial_data = True
+    if ma200 is None:
+        ma200 = price  # Use current price as proxy
+        partial_data = True
+
+    if partial_data:
         logger.warning(
-            "Insufficient bars for indicators: len=%s symbol=%s",
-            len(hist),
-            symbol,
+            "Partial indicator data for %s (len=%s) — using defaults for missing indicators",
+            symbol, len(hist),
         )
-        return {
-            "error": "Not enough historical data for technical indicators (need ~200 trading sessions). Try another symbol or retry later.",
-        }
 
     trend = "Uptrend" if ma50 > ma200 else "Downtrend"
 
@@ -512,13 +540,26 @@ Strict FORMAT:
     verdict = f"📌 Final Verdict: **{suggested}** — {strategy_notes}"
 
     try:
-        log_verdict(symbol, price, verdict)
+        log_verdict(
+            symbol,
+            price,
+            verdict,
+            signal_score=score,
+            strategy_type=suggested,
+            news_sentiment=sentiment,
+        )
     except Exception:
         pass
 
     result = {
         "company": long_name,
         "symbol": symbol,
+        "technical_snapshot": {
+            "rsi": rsi,
+            "ma50": ma50,
+            "ma200": ma200,
+            "trend": trend,
+        },
         "ratios": {
             "P/E": pe,
             "P/B": pb,

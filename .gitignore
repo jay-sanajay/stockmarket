@@ -19,6 +19,7 @@ dist-ssr
 
 # App runtime
 verdict_log.json
+/data
 
 # Python
 __pycache__/

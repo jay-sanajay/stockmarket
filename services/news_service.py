@@ -136,3 +136,28 @@ Write the sentiment as a one-word summary first, followed by a brief reason base
     except Exception as e:
         logger.exception("fetch_news_sentiment failed: %s", e)
         return f"News fetch error: {e}", []
+
+
+def fetch_headlines_for_query(query: str, limit: int = 8) -> list[str]:
+    """Headlines only (for market dashboard) — no Gemini."""
+    api_key = get_newsdata_api_key()
+    if not api_key:
+        return []
+    try:
+        url = (
+            f"https://newsdata.io/api/1/news?apikey={api_key}"
+            f"&q={quote(query)}&country=in&language=en"
+        )
+        res = requests.get(url, timeout=12)
+        if res.status_code == 429:
+            return []
+        res.raise_for_status()
+        data = res.json()
+        return [
+            article["title"]
+            for article in data.get("results", [])
+            if article.get("title")
+        ][:limit]
+    except Exception as e:
+        logger.warning("fetch_headlines_for_query: %s", e)
+        return []

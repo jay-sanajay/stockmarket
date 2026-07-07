@@ -110,3 +110,28 @@ def skip_gemini_for_sentiment() -> bool:
     if raw in ("1", "true", "yes"):
         return True
     return is_render_deployment()
+
+
+def get_database_url() -> str:
+    """
+    SQLite file in ./data by default. On Render, set DATABASE_URL to PostgreSQL.
+    """
+    u = os.getenv("DATABASE_URL", "").strip()
+    if not u:
+        return "sqlite:///./data/jayquant.db"
+    if u.startswith("postgres://"):
+        return "postgresql+psycopg2://" + u[len("postgres://") :]
+    return u
+
+
+JWT_ALGORITHM = "HS256"
+
+
+def get_jwt_secret() -> str:
+    s = os.getenv("JWT_SECRET", "").strip()
+    if s:
+        return s
+    if is_production() or is_render_deployment():
+        # Render without JWT_SECRET is insecure — still allow boot with warning
+        return os.getenv("RENDER", "change-me-set-jwt-secret")
+    return "dev-only-insecure-jwt-secret"

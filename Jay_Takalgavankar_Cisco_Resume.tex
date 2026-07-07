@@ -1,0 +1,165 @@
+%------------------------
+% Resume in Latex — Tailored for Cisco Software Engineer Role
+%------------------------
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[left=0.4in, top=0.4in, right=0.4in, bottom=0.4in]{geometry}
+\usepackage{latexsym}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[T1]{fontenc}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+
+\titleformat{\section}{
+  \vspace{-8pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-6pt}]
+
+\raggedright
+
+%-------------------------
+% Custom ATS-Friendly Commands
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0in, label={}, itemsep=1pt, parsep=0pt, topsep=1pt, partopsep=0pt]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}\vspace{0pt}}
+
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.15in, itemsep=1pt, parsep=0pt, topsep=1pt, partopsep=0pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{0pt}}
+
+\newcommand{\resumeItem}[1]{\item\small{#1}}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{0pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \vspace{-1pt}\item
+    \begin{tabular*}{1.0\textwidth}{l@{\extracolsep{\fill}}r}
+      #1 & \textbf{\small #2} \\
+    \end{tabular*}\vspace{0pt}
+}
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+{\Huge \textbf{Jay Takalgavankar}} \\ \vspace{4pt}
+\small
+\href{mailto:jaytakalgavankar@gmail.com}{jaytakalgavankar@gmail.com} \;|\;
++91-9766843534 \;|\;
+\href{https://github.com/jay-sanajay}{GitHub} \;|\;
+\href{https://leetcode.com/u/jaykt/}{LeetCode} \;|\;
+\href{https://www.linkedin.com/in/jay-takalgavankar-a1800828b/}{LinkedIn}
+\end{center}
+
+\vspace{-12pt}
+%-----------SUMMARY-----------
+\section{Professional Summary}
+\vspace{2pt}
+\small{Software Engineer (2027 graduate) with a strong foundation in computer science fundamentals, software-defined technologies, and cloud-native application development. Proficient in Python, C++, Java, and TypeScript with hands-on experience building scalable microservices, automating infrastructure workflows using Docker and CI/CD pipelines, and developing secure REST APIs on Linux-based environments. Passionate about driving IT transformation through software automation, cross-functional collaboration, and delivering production-grade solutions that maximize customer impact at scale.}
+
+\vspace{-8pt}
+%-----------EDUCATION-----------
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {National Institute of Technology, Kurukshetra}{Kurukshetra, India}
+    {Bachelor of Technology in Industrial Internet of Things; \textbf{CGPA: 8.13 / 10}}{Aug 2023 -- May 2027}
+    \vspace{1pt}
+    \small{\textbf{Relevant Coursework:} Data Structures \& Algorithms, Object-Oriented Design \& Programming, Database Management Systems, Operating Systems (Unix/Linux), Computer Networks, Cloud Computing Fundamentals}
+\resumeSubHeadingListEnd
+
+\vspace{-8pt}
+%-----------EXPERIENCE-----------
+\section{Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {The BAAP Company}{Sangamner, India}
+    {Software Engineering Intern}{May 2025 -- Jul 2025}
+    \resumeItemListStart
+        \resumeItem{Designed and launched 8+ scalable REST APIs on a Linux-based cloud environment, implementing robust input validation, secure authentication, and role-based access controls for enterprise workflows.}
+        \resumeItem{Automated data pipeline orchestration and schema extraction workflows using Python scripting, reducing manual engineering effort by 40\% and accelerating delivery timelines across the team.}
+        \resumeItem{Wrote clean, maintainable code adhering to Agile development methodologies and Secure SDLC principles, collaborating with cross-functional stakeholders via Git-based code review workflows.}
+        \resumeItem{Integrated Google Gemini API with React.js front-end, securely handling data transformations and slashing natural language-to-SQL query latency by 95\%, directly improving customer-facing application performance.}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {JPMorganChase}{Remote}
+    {Software Engineering Virtual Experience}{May 2025}
+    \resumeItemListStart
+        \resumeItem{Developed a production-grade Spring Boot (Java) microservice integrated with Apache Kafka for event-driven architecture, managing high-throughput client-server communications for 1,000+ concurrent transactions.}
+        \resumeItem{Engineered secure transaction validation workflows with 100\% ACID-compliant storage, adhering to enterprise software development standards for data integrity and fault tolerance.}
+        \resumeItem{Integrated 3+ external REST APIs to deliver secure, scalable balance inquiry endpoints, enforcing strict access controls and standardized JSON response handling.}
+        \resumeItem{Executed 15+ rigorous test cases across unit, integration, and system levels, driving service reliability above 95\% through systematic debugging and vulnerability triaging.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\vspace{-8pt}
+%-----------PROJECTS-----------
+\section{Projects}
+\resumeSubHeadingListStart
+
+  \resumeProjectHeading
+    {\textbf{Store Intelligence Platform | Cloud-Native Analytics Engine} $|$ \emph{Python, React.js, FastAPI, Docker, CI/CD, Linux} $|$ \href{https://github.com/jay-sanajay}{GitHub}}{}
+    \resumeItemListStart
+      \resumeItem{Architected a cloud-native microservices ecosystem deployed via Docker containers on Linux infrastructure, processing 5,000+ daily tracking events through secure, automated REST API endpoints.}
+      \resumeItem{Built a YOLOv8 computer vision pipeline with Python, streaming real-time footfall analytics to React.js dashboards while enforcing strict data privacy and security policies.}
+      \resumeItem{Implemented end-to-end CI/CD automation pipelines with containerized deployments (Docker), achieving reproducible builds and reducing deployment setup time from hours to under 10 minutes.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Real-Time Logistics Intelligence Platform} $|$ \emph{React.js, FastAPI, Python, REST APIs, Docker} $|$ \href{https://smart-logistics-app.vercel.app/}{Live} $|$ \href{https://github.com/jay-sanajay}{GitHub}}{}
+    \resumeItemListStart
+      \resumeItem{Constructed a full-stack web application using React.js and FastAPI (Python) to securely process, transmit, and visualize 150+ delivery tracking records with real-time data synchronization.}
+      \resumeItem{Led extensive code reviews, debugging, and vulnerability triaging across the stack, eliminating UI inconsistencies and boosting system resilience for end-user reliability.}
+      \resumeItem{Optimized application performance by refactoring front-end rendering logic and securing REST API data pipelines, reducing client-side latency by 70\% and improving customer experience.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Infrastructure Automation \& Scripting Toolkit} $|$ \emph{Python, Bash, Linux, Docker, Kubernetes} $|$ \href{https://github.com/jay-sanajay}{GitHub}}{}
+    \resumeItemListStart
+      \resumeItem{Developed Python and Bash automation scripts on Unix/Linux systems to streamline repetitive infrastructure tasks, including log rotation, service health checks, and container orchestration.}
+      \resumeItem{Containerized multi-service applications using Docker and Docker Compose, and explored Kubernetes for orchestrating scalable, self-healing deployments in cloud-native environments.}
+      \resumeItem{Created reusable CLI tooling for automated environment provisioning and configuration management, reducing setup time for new development environments by 60\%.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\vspace{-8pt}
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0in, label={}]
+    \small{\item{
+     \textbf{Languages \& Scripting}{: Python, C++, Java, TypeScript, JavaScript, SQL, Bash/Shell Scripting, Go (Basics)} \\ \vspace{2pt}
+     \textbf{CS Fundamentals}{: Data Structures \& Algorithms, Object-Oriented Design \& Programming, DBMS, Operating Systems, Computer Networks} \\ \vspace{2pt}
+     \textbf{Cloud, DevOps \& Automation}{: Docker, Kubernetes (Basics), CI/CD Pipelines, Git, Linux/Unix, Cloud-Native Development, Infrastructure Automation} \\ \vspace{2pt}
+     \textbf{Security \& Methodologies}{: Secure SDLC, Vulnerability Triaging, Code Reviews, Agile/Scrum, Stakeholder Collaboration} \\ \vspace{2pt}
+     \textbf{Backend \& Databases}{: FastAPI, Spring Boot, Node.js, Apache Kafka, PostgreSQL, MongoDB, REST API Design} \\ \vspace{2pt}
+     \textbf{Frontend \& Web}{: React.js, HTML, CSS, Responsive Design}
+    }}
+ \end{itemize}
+
+\vspace{-12pt}
+%-----------ACHIEVEMENTS-----------
+\section{Achievements}
+\resumeItemListStart
+    \resumeItem{Achieved a \textbf{top 2\% finish}, ranking \textbf{324th out of 16,000+ participants} nationwide in the highly competitive \textbf{Goldman Sachs Engineering Hackathon}.}
+    \resumeItem{Solved \textbf{600+ Data Structures and Algorithms} problems across LeetCode and CodeChef, demonstrating strong algorithmic thinking and software engineering aptitude.}
+    \resumeItem{Earned a competitive \textbf{3\ensuremath{\star} CodeChef} rating through consistent high performance in global algorithmic programming contests.}
+    \resumeItem{Secured a \textbf{98.5 percentile in JEE Main} and ranked among the \textbf{top 1.5\%} of candidates nationwide in the highly competitive JEE Advanced examination.}
+\resumeItemListEnd
+
+\end{document}

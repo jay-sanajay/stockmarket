@@ -37,10 +37,10 @@ def compute_technicals(hist):
 def last_numeric(series, label: str) -> float | None:
     """Last valid numeric value from a series."""
     try:
-        v = series.iloc[-1]
-        if pd.isna(v):
+        valid_series = series.dropna()
+        if valid_series.empty:
             return None
-        return float(v)
+        return float(valid_series.iloc[-1])
     except Exception as e:
         logger.warning("last_numeric failed for %s: %s", label, e)
         return None
